@@ -1,0 +1,14 @@
+
+> espejo-cuantico@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1773ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.7s (463 modules)
+ GET / 200 in 5092ms
+ GET / 200 in 68ms
+ GET / 200 in 40ms
