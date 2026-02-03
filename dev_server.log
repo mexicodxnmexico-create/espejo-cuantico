@@ -1,0 +1,20 @@
+
+> espejo-cuantico@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3001
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling / ...
+ ✓ Compiled / in 3.6s (469 modules)
+ GET / 200 in 3935ms
+ ○ Compiling /api/quantum ...
+ ✓ Compiled /api/quantum in 3.5s (266 modules)
+ GET /api/quantum 200 in 3624ms
+ GET /api/quantum 200 in 11ms
+1115ms
+ GET / 200 in 26ms
+ GET / 200 in 38ms
