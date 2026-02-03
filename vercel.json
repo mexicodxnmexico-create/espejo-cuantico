@@ -1,0 +1,7 @@
+{
+  "name": "espejo-cuantico",
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
