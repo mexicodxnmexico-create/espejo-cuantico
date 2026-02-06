@@ -28,10 +28,17 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Debounce localStorage writes to 1000ms.
+  // This reduces the frequency of expensive synchronous JSON.stringify and disk I/O calls
+  // during rapid user interactions, improving "Interaction to Next Paint" (INP).
   useEffect(() => {
-    if (!loading) {
+    if (loading) return;
+
+    const timeoutId = setTimeout(() => {
       localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-    }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
