@@ -28,7 +28,8 @@ export class QuantumEngine {
         newState.phase = "OBSERVING";
         newState.entropy += 2;
         newState.coherence = Math.max(0, newState.coherence - 1);
-        newState.history = [...state.history, "Observación registrada. La entropía aumenta."];
+        // ⚡ BOLT: Cap history to 100 items to prevent unbounded state growth
+        newState.history = [...state.history, "Observación registrada. La entropía aumenta."].slice(-100);
         break;
 
       case "REFLECT":
@@ -37,10 +38,12 @@ export class QuantumEngine {
           newState.coherence = Math.max(0, newState.coherence - 5);
           newState.entropy += 5;
           newState.reflectionCount += 1;
-          newState.history = [...state.history, "Reflexión proyectada. El sistema se recalibra."];
+          // ⚡ BOLT: Cap history to 100 items to prevent unbounded state growth
+          newState.history = [...state.history, "Reflexión proyectada. El sistema se recalibra."].slice(-100);
         } else {
           newState.phase = "COLLAPSED";
-          newState.history = [...state.history, "Colapso detectado. Coherencia insuficiente para reflejar."];
+          // ⚡ BOLT: Cap history to 100 items to prevent unbounded state growth
+          newState.history = [...state.history, "Colapso detectado. Coherencia insuficiente para reflejar."].slice(-100);
         }
         break;
 
@@ -55,6 +58,10 @@ export class QuantumEngine {
 
     if (newState.coherence <= 0) {
       newState.phase = "COLLAPSED";
+      // Ensure collapse message is added to history if it triggered here
+      if (state.phase !== "COLLAPSED") {
+        newState.history = [...newState.history, "Sistema colapsado por pérdida de coherencia."].slice(-100);
+      }
     }
 
     return newState;
