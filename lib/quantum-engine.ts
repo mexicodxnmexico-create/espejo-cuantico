@@ -1,4 +1,4 @@
-export type QuantumPhase = "IDLE" | "OBSERVING" | "REFLECTING" | "ENTANGLED" | "COLLAPSED";
+export type QuantumPhase = "IDLE" | "OBSERVING" | "REFLECTING" | "ENTANGLED" | "COLLAPSED" | "ALIGNING";
 
 export interface QuantumSystemState {
   phase: QuantumPhase;
@@ -19,7 +19,7 @@ export const INITIAL_STATE: QuantumSystemState = {
 };
 
 export class QuantumEngine {
-  static transition(state: QuantumSystemState, action: "OBSERVE" | "REFLECT" | "RESET"): QuantumSystemState {
+  static transition(state: QuantumSystemState, action: "OBSERVE" | "REFLECT" | "RESET" | "ALIGN"): QuantumSystemState {
     // ⚡ BOLT: Fix mutation bug by ensuring history is updated immutably
     const newState: QuantumSystemState = { ...state, lastUpdate: Date.now() };
 
@@ -44,6 +44,15 @@ export class QuantumEngine {
         }
         break;
 
+      case "ALIGN":
+        if (state.entropy > 20) {
+          newState.phase = "ALIGNING"; // This is a new phase, need to update QuantumPhase type too?
+          newState.entropy = Math.max(0, newState.entropy - 10);
+          newState.coherence = Math.min(100, newState.coherence + 5);
+          newState.history = [...state.history, "Alineación resonante. El caos se organiza."];
+        }
+        break;
+
       case "RESET":
         return { ...INITIAL_STATE, history: ["Sistema reiniciado manualmente."] };
     }
@@ -63,6 +72,7 @@ export class QuantumEngine {
   static getStatusMessage(state: QuantumSystemState): string {
     if (state.phase === "COLLAPSED") return "El espejo se ha quebrado. Reinicia para restaurar la armonía.";
     if (state.phase === "ENTANGLED") return "Estás entrelazado con el sistema. Tus acciones tienen consecuencias globales.";
+    if (state.phase === "ALIGNING") return "El sistema se reorganiza en armonía. La entropía disminuye.";
     if (state.coherence < 50) return "La señal es débil. El ruido está ganando.";
     return "Sistema estable. El espejo aguarda tu intención.";
   }

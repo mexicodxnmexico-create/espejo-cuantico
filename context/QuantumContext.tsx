@@ -5,7 +5,7 @@ import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-
 
 interface QuantumContextType {
   state: QuantumSystemState;
-  dispatch: (action: "OBSERVE" | "REFLECT" | "RESET") => void;
+  dispatch: (action: "OBSERVE" | "REFLECT" | "RESET" | "ALIGN") => void;
   loading: boolean;
 }
 
@@ -34,7 +34,7 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state, loading]);
 
-  const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
+  const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET" | "ALIGN") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 

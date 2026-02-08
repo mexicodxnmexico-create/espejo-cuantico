@@ -44,7 +44,7 @@ export default function Home() {
           </p>
         </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "2rem", marginBottom: "4rem" }}>
           <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
             <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Coherencia</span>
             <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
@@ -70,6 +70,20 @@ export default function Home() {
               style={{ width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold" }}
             >
               Reflejar
+            </button>
+          </div>
+
+          <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Alineación</span>
+            <div style={{ fontSize: "1.5rem", fontWeight: "bold", margin: "1.25rem 0", color: "#0070f3", height: "3rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {state.phase}
+            </div>
+            <button
+              onClick={() => dispatch("ALIGN")}
+              disabled={state.entropy <= 20 || state.phase === "COLLAPSED"}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#0070f3", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold", opacity: (state.entropy <= 20 || state.phase === "COLLAPSED") ? 0.5 : 1 }}
+            >
+              Alinear
             </button>
           </div>
         </div>
