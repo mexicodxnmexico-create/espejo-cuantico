@@ -29,17 +29,26 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loading) {
+    if (loading) return;
+
+    // ⚡ BOLT: Debounce localStorage writes to reduce blocking synchronous I/O
+    // during rapid state updates. This improves responsiveness.
+    const handler = setTimeout(() => {
       localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-    }
+    }, 500);
+
+    return () => clearTimeout(handler);
   }, [state, loading]);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
+  // ⚡ BOLT: Memoize context value to prevent unnecessary re-renders of consumers
+  const value = React.useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
+
   return (
-    <QuantumContext.Provider value={{ state, dispatch, loading }}>
+    <QuantumContext.Provider value={value}>
       {children}
     </QuantumContext.Provider>
   );

@@ -57,6 +57,11 @@ export class QuantumEngine {
       newState.phase = "COLLAPSED";
     }
 
+    // ⚡ BOLT: Cap history to 100 items to prevent unbounded growth and keep serialization fast (O(1) state size)
+    if (newState.history.length > 100) {
+      newState.history = newState.history.slice(-100);
+    }
+
     return newState;
   }
 
