@@ -7,3 +7,7 @@
 ## 2025-02-05 - Efficient History Rendering
 **Learning:** Found that using `reverse()` on an array before mapping it in React causes O(n) computation and, more importantly, breaks key stability if using indices, leading to O(n) DOM updates.
 **Action:** Use `display: flex; flex-direction: column-reverse;` on the container to achieve visual reversal without array modification. Use absolute indices from the original array as keys to maintain stability, resulting in O(1) updates when new items are appended. Additionally, slice the history to a reasonable limit (e.g., last 50) to avoid DOM bloat.
+
+## 2025-02-06 - Unbounded State Growth
+**Learning:** Found that `QuantumSystemState.history` was allowed to grow indefinitely, leading to O(N) memory usage and O(N) serialization costs for `localStorage` persistence, which runs synchronously on the main thread.
+**Action:** Capped the history array to the last 100 items in `QuantumEngine.transition`. This ensures O(1) memory usage (capped at constant size) and constant-time serialization, preventing long-term performance degradation.
