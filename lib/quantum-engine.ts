@@ -18,17 +18,25 @@ export const INITIAL_STATE: QuantumSystemState = {
   lastUpdate: Date.now(),
 };
 
+const MAX_HISTORY_LENGTH = 100;
+
 export class QuantumEngine {
   static transition(state: QuantumSystemState, action: "OBSERVE" | "REFLECT" | "RESET"): QuantumSystemState {
     // ⚡ BOLT: Fix mutation bug by ensuring history is updated immutably
     const newState: QuantumSystemState = { ...state, lastUpdate: Date.now() };
+
+    // Helper to keep history bounded
+    const updateHistory = (newEntry: string) => {
+      const nextHistory = [...state.history, newEntry];
+      return nextHistory.slice(-MAX_HISTORY_LENGTH);
+    };
 
     switch (action) {
       case "OBSERVE":
         newState.phase = "OBSERVING";
         newState.entropy += 2;
         newState.coherence = Math.max(0, newState.coherence - 1);
-        newState.history = [...state.history, "Observación registrada. La entropía aumenta."];
+        newState.history = updateHistory("Observación registrada. La entropía aumenta.");
         break;
 
       case "REFLECT":
@@ -37,10 +45,10 @@ export class QuantumEngine {
           newState.coherence = Math.max(0, newState.coherence - 5);
           newState.entropy += 5;
           newState.reflectionCount += 1;
-          newState.history = [...state.history, "Reflexión proyectada. El sistema se recalibra."];
+          newState.history = updateHistory("Reflexión proyectada. El sistema se recalibra.");
         } else {
           newState.phase = "COLLAPSED";
-          newState.history = [...state.history, "Colapso detectado. Coherencia insuficiente para reflejar."];
+          newState.history = updateHistory("Colapso detectado. Coherencia insuficiente para reflejar.");
         }
         break;
 
