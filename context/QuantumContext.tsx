@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -30,7 +30,11 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading) {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      // ⚡ BOLT: Debounce localStorage saves to reduce blocking synchronous I/O
+      const timeout = setTimeout(() => {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      }, 500);
+      return () => clearTimeout(timeout);
     }
   }, [state, loading]);
 
@@ -38,8 +42,11 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
+  // ⚡ BOLT: Memoize provider value to prevent unnecessary re-renders of all consumers
+  const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
+
   return (
-    <QuantumContext.Provider value={{ state, dispatch, loading }}>
+    <QuantumContext.Provider value={value}>
       {children}
     </QuantumContext.Provider>
   );
