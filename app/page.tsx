@@ -4,6 +4,7 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
+import { QuantumField } from "@/components/QuantumField";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Header } from "@/components/Header";
 
@@ -43,6 +44,8 @@ export default function Home() {
             {QuantumEngine.getStatusMessage(state)}
           </p>
         </section>
+
+        <QuantumField coherence={state.coherence} entropy={state.entropy} phase={state.phase} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" }}>
           <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
