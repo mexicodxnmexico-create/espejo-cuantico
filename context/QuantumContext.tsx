@@ -29,9 +29,19 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-    }
+    if (loading) return;
+
+    // ⚡ BOLT: Debounce localStorage writes to prevent blocking the main thread
+    // on rapid state updates (e.g. repeated clicks).
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      } catch (e) {
+        console.error("Failed to save quantum state", e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
