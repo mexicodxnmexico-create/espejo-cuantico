@@ -10,3 +10,6 @@
 
 ## 2025-02-12 - Tooling Updates
 **Action:** Installed `@google/jules` globally (`npm install -g @google/jules`) to provide access to the Jules CLI for asynchronous coding tasks.
+## 2025-02-06 - Unbounded State Growth
+**Learning:** The `QuantumSystemState.history` array was growing indefinitely, causing increased memory usage and slower `localStorage` serialization (blocking the main thread) as the session duration increased.
+**Action:** Cap the history array to a fixed size (e.g., 100 items) within the state transition logic to ensure constant-time (O(1)) memory usage and serialization performance, regardless of session length.
