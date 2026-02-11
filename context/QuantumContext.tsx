@@ -30,7 +30,17 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading) {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      // ⚡ BOLT OPTIMIZATION: Debounce localStorage writes by 500ms
+      // to avoid blocking the main thread with synchronous I/O on every state update.
+      const timer = setTimeout(() => {
+        try {
+          localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+        } catch (e) {
+          console.error("Failed to save quantum state", e);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
     }
   }, [state, loading]);
 
