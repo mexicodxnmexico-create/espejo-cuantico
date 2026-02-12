@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -17,29 +17,45 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
 
   // Persistence (Addressing "memory" requirement)
   useEffect(() => {
-    const saved = localStorage.getItem("quantum_state_v2");
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("quantum_state_v2");
+      if (saved) {
         setState(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse quantum state", e);
       }
+    } catch (e) {
+      console.error("Failed to parse quantum state", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Debounce localStorage saves to reduce main-thread blockage
+  // during rapid state updates. JSON.stringify and setItem are synchronous and expensive.
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-    }
+    if (loading) return;
+
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      } catch (e) {
+        // Handle QuotaExceededError or other storage issues gracefully
+        console.error("Failed to save quantum state", e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Memoize context value to prevent unnecessary re-renders
+  // of components that only need dispatch or loading status.
+  const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
+
   return (
-    <QuantumContext.Provider value={{ state, dispatch, loading }}>
+    <QuantumContext.Provider value={value}>
       {children}
     </QuantumContext.Provider>
   );
