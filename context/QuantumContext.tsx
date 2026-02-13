@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -28,11 +28,41 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  // ⚡ BOLT: Debounce localStorage writes to avoid blocking the main thread on every state change.
+  const stateRef = useRef(state);
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-    }
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      } catch (e) {
+        console.error("Failed to save state to localStorage:", e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
+
+  // ⚡ BOLT: Ensure state is saved if the user closes the tab before the debounce fires.
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!loading) {
+        try {
+          localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+        } catch (e) {
+          console.error("Failed to save state during unload:", e);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [loading]);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
