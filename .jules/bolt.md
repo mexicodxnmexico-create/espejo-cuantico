@@ -11,3 +11,7 @@
 ## 2025-02-06 - Unbounded State Growth
 **Learning:** The `QuantumSystemState.history` array was growing indefinitely, causing increased memory usage and slower `localStorage` serialization (blocking the main thread) as the session duration increased.
 **Action:** Cap the history array to a fixed size (e.g., 100 items) within the state transition logic to ensure constant-time (O(1)) memory usage and serialization performance, regardless of session length.
+
+## 2025-02-07 - Debounced State Persistence
+**Learning:** Frequent, synchronous `localStorage` writes (using `JSON.stringify`) on every state change block the main thread and degrade UI responsiveness during rapid interactions.
+**Action:** Implement a debounced persistence mechanism (e.g., 500ms) to batch I/O operations. Use a `beforeunload` listener with a `useRef` to guarantee data integrity without sacrificing performance or re-binding listeners unnecessarily.
