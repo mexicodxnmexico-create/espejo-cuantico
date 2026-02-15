@@ -11,3 +11,7 @@
 ## 2025-02-06 - Unbounded State Growth
 **Learning:** The `QuantumSystemState.history` array was growing indefinitely, causing increased memory usage and slower `localStorage` serialization (blocking the main thread) as the session duration increased.
 **Action:** Cap the history array to a fixed size (e.g., 100 items) within the state transition logic to ensure constant-time (O(1)) memory usage and serialization performance, regardless of session length.
+
+## 2025-02-07 - Synchronous Storage Blocking
+**Learning:** `localStorage.setItem` is synchronous and can block the main thread, especially when serializing large state objects (`JSON.stringify`) on every state update. In high-frequency interaction apps, this causes noticeable jank.
+**Action:** Implement a debounce (e.g., 500ms) for persistence operations to unblock the main thread, and use a `beforeunload` listener with a ref to the latest state to ensure data safety on exit.
