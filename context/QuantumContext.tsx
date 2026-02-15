@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -38,8 +38,10 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
+  const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
+
   return (
-    <QuantumContext.Provider value={{ state, dispatch, loading }}>
+    <QuantumContext.Provider value={value}>
       {children}
     </QuantumContext.Provider>
   );
