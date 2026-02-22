@@ -1,0 +1,12 @@
+
+> espejo-cuantico@0.1.0 dev /app
+> next dev
+
+▲ Next.js 16.1.5 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+
+✓ Starting...
+✓ Ready in 575ms
+ GET / 200 in 2.3s (compile: 2.0s, render: 301ms)
+ GET / 200 in 86ms (compile: 9ms, render: 77ms)
