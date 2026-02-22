@@ -20,8 +20,8 @@ export const INITIAL_STATE: QuantumSystemState = {
 
 export class QuantumEngine {
   static transition(state: QuantumSystemState, action: "OBSERVE" | "REFLECT" | "RESET"): QuantumSystemState {
-    // ⚡ BOLT: Fix mutation bug by ensuring history is updated immutably
-    const newState: QuantumSystemState = { ...state, lastUpdate: Date.now() };
+    // ⚡ BOLT: Ensure history is updated immutably by creating a shallow copy
+    const newState: QuantumSystemState = { ...state, history: [...state.history], lastUpdate: Date.now() };
 
     switch (action) {
       case "OBSERVE":
