@@ -27,7 +27,11 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
     },
   ];
 
-  if (step >= steps.length) return null;
+  useEffect(() => {
+    // Shift focus to the heading when the step changes to announce new content
+    head
+
+  
 
   return (
     <div
