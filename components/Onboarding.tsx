@@ -6,6 +6,12 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
   const [step, setStep] = useState(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
+  useEffect(() => {
+    if (headingRef.current) {
+      headingRef.current.focus();
+    }
+  }, [step]);
+
   const steps = [
     {
       title: "Bienvenido al Espejo Cuántico",
@@ -23,17 +29,16 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
 
   useEffect(() => {
     // Shift focus to the heading when the step changes to announce new content
-    headingRef.current?.focus();
-  }, [step]);
+    head
 
-  if (step >= steps.length) return null;
+  
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-title"
-      aria-describedby="onboarding-desc"
+      aria-describedby="onboarding-content"
       style={{
         position: "fixed",
         top: 0,
@@ -65,16 +70,11 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
           {steps[step].title}
         </h2>
         <p
-          id="onboarding-desc"
+          id="onboarding-content"
           style={{ color: "#666", lineHeight: "1.6", marginBottom: "2rem" }}
         >
           {steps[step].content}
         </p>
-
-        <div style={{ marginBottom: "1.5rem", fontSize: "0.875rem", color: "#888", fontWeight: 500 }}>
-          Paso {step + 1} de {steps.length}
-        </div>
-
         <button
           onClick={() => {
             if (step === steps.length - 1) {
