@@ -39,7 +39,7 @@ export default function Home() {
       <main style={{ padding: "4rem 0" }}>
         <section style={{ textAlign: "center", marginBottom: "4rem" }}>
           <h1 style={{ fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" }}>Espejo Cuántico</h1>
-          <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
+          <p role="status" aria-live="polite" style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
             {QuantumEngine.getStatusMessage(state)}
           </p>
         </section>
@@ -88,27 +88,41 @@ export default function Home() {
 
         <section>
           <h2 style={{ marginBottom: "1.5rem" }}>Historial de Eventos</h2>
-          <div style={{
-            backgroundColor: "#fafafa",
-            padding: "1.5rem",
-            borderRadius: "12px",
-            border: "1px solid #eaeaea",
-            height: "200px",
-            overflowY: "auto",
-            fontFamily: "monospace",
-            fontSize: "0.9rem"
-          }}>
-            <div style={{ display: "flex", flexDirection: "column-reverse" }}>
+          <div
+            role="region"
+            aria-label="Registro de eventos"
+            tabIndex={0}
+            style={{
+              backgroundColor: "#fafafa",
+              padding: "1.5rem",
+              borderRadius: "12px",
+              border: "1px solid #eaeaea",
+              height: "200px",
+              overflowY: "auto",
+              fontFamily: "monospace",
+              fontSize: "0.9rem"
+            }}
+          >
+            <ul
+              role="log"
+              style={{
+                display: "flex",
+                flexDirection: "column-reverse",
+                listStyle: "none",
+                margin: 0,
+                padding: 0
+              }}
+            >
               {historyToRender.map((entry, i) => {
                 const isLatest = i === historyToRender.length - 1;
                 const absoluteIndex = startIndex + i;
                 return (
-                  <div key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#999" }}>
+                  <li key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#999" }}>
                     {isLatest ? "> " : "  "} {entry}
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
         </section>
       </main>
