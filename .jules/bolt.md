@@ -12,6 +12,6 @@
 **Learning:** The `QuantumSystemState.history` array was growing indefinitely, causing increased memory usage and slower `localStorage` serialization (blocking the main thread) as the session duration increased.
 **Action:** Cap the history array to a fixed size (e.g., 100 items) within the state transition logic to ensure constant-time (O(1)) memory usage and serialization performance, regardless of session length.
 
-## 2025-02-07 - Synchronous I/O Blocking
-**Learning:** Writing to `localStorage` is a synchronous operation that blocks the main thread. When tied directly to frequent state updates (like rapid button clicks), this causes measurable jank and frame drops, even with small data payloads.
-**Action:** Debounce `localStorage` persistence using `setTimeout` (e.g., 500ms) to batch writes. Crucially, pair this with a `beforeunload` listener to ensure data integrity is maintained when the session ends abruptly.
+## 2025-05-22 - Debounced State Persistence
+**Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` during rapid user interactions (e.g., clicking 'Observe' multiple times) can block the main thread and cause UI stuttering.
+**Action:** Implement a debounced persistence mechanism (e.g., 500ms) to consolidate state updates and reduce expensive I/O operations. Also, memoize the context provider value to prevent redundant re-renders of components that don't depend on the state itself.
