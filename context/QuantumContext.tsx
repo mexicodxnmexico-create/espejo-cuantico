@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -15,7 +15,14 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<QuantumSystemState>(INITIAL_STATE);
   const [loading, setLoading] = useState(true);
 
-  // Persistence (Addressing "memory" requirement)
+  // ⚡ BOLT OPTIMIZATION: Use a ref for the latest state to ensure stable access
+  // in debounced effects and event listeners without re-binding.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Initial load
   useEffect(() => {
     const saved = localStorage.getItem("quantum_state_v2");
     if (saved) {
@@ -28,18 +35,45 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Debounce localStorage writes (500ms) to prevent
+  // main-thread blocking during frequent state updates.
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-    }
+    if (loading) return;
+
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+      } catch (e) {
+        console.error("Failed to save quantum state", e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
+
+  // ⚡ BOLT OPTIMIZATION: Ensure the latest state is saved immediately on tab closure
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Memoize provider value to prevent unnecessary re-renders
+  // of consumer components when state, dispatch, or loading hasn't changed.
+  const contextValue = useMemo(() => ({
+    state,
+    dispatch,
+    loading
+  }), [state, dispatch, loading]);
+
   return (
-    <QuantumContext.Provider value={{ state, dispatch, loading }}>
+    <QuantumContext.Provider value={contextValue}>
       {children}
     </QuantumContext.Provider>
   );
