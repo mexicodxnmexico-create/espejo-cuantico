@@ -15,3 +15,5 @@
 ## 2025-02-07 - Synchronous I/O Blocking
 **Learning:** Writing to `localStorage` is a synchronous operation that blocks the main thread. When tied directly to frequent state updates (like rapid button clicks), this causes measurable jank and frame drops, even with small data payloads.
 **Action:** Debounce `localStorage` persistence using `setTimeout` (e.g., 500ms) to batch writes. Crucially, pair this with a `beforeunload` listener to ensure data integrity is maintained when the session ends abruptly.
+@jules
+
