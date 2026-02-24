@@ -46,6 +46,22 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
+  // ⚡ BOLT: Ensure state is saved immediately when the tab is closed
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!loading && stateRef.current) {
+        try {
+          localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+        } catch (e) {
+          console.error("Failed to save state on unload", e);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [loading]);
+
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
