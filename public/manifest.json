@@ -1,0 +1,9 @@
+{
+  "name": "Espejo Cuántico",
+  "short_name": "Espejo",
+  "description": "Explora tu reflejo cuántico y gestiona la coherencia del sistema.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000"
+}
