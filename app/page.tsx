@@ -46,7 +46,7 @@ export default function Home() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" }}>
           <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
-            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Coherencia</span>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" }}>Coherencia</span>
             <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
               {state.coherence}%
             </div>
@@ -60,7 +60,7 @@ export default function Home() {
           </div>
 
           <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
-            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Entropía</span>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" }}>Entropía</span>
             <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
               {state.entropy}
             </div>
@@ -88,27 +88,32 @@ export default function Home() {
 
         <section>
           <h2 style={{ marginBottom: "1.5rem" }}>Historial de Eventos</h2>
-          <div style={{
-            backgroundColor: "#fafafa",
-            padding: "1.5rem",
-            borderRadius: "12px",
-            border: "1px solid #eaeaea",
-            height: "200px",
-            overflowY: "auto",
-            fontFamily: "monospace",
-            fontSize: "0.9rem"
-          }}>
-            <div style={{ display: "flex", flexDirection: "column-reverse" }}>
+          <div
+            role="log"
+            aria-label="Historial de eventos"
+            tabIndex={0}
+            style={{
+              backgroundColor: "#fafafa",
+              padding: "1.5rem",
+              borderRadius: "12px",
+              border: "1px solid #eaeaea",
+              height: "200px",
+              overflowY: "auto",
+              fontFamily: "monospace",
+              fontSize: "0.9rem"
+            }}
+          >
+            <ul style={{ display: "flex", flexDirection: "column-reverse", listStyle: "none", padding: 0, margin: 0 }}>
               {historyToRender.map((entry, i) => {
                 const isLatest = i === historyToRender.length - 1;
                 const absoluteIndex = startIndex + i;
                 return (
-                  <div key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#999" }}>
+                  <li key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#555" }}>
                     {isLatest ? "> " : "  "} {entry}
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </div>
         </section>
       </main>
