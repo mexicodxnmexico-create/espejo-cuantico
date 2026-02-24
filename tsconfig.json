@@ -15,7 +15,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -25,11 +25,6 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "incremental": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
     "plugins": [
       {
         "name": "next"
@@ -37,10 +32,13 @@
     ]
   },
   "include": [
-    "app",
-    ".next/types/**/*.ts",
-    "next-env.d.ts",
-    ".next/dev/types/**/*.ts"
+    "src",
+    ".next/types/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
   ],
   "exclude": [
     "node_modules"

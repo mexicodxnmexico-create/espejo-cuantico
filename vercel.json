@@ -1,6 +1,7 @@
 {
+  "name": "espejo-cuantico",
   "buildCommand": "next build",
   "devCommand": "next dev",
-  "installCommand": "pnpm install",
+  "outputDirectory": ".next",
   "framework": "nextjs"
 }

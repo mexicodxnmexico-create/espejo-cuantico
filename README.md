@@ -1,95 +1,96 @@
-# Espejo Cuántico (Quantum Mirror)
+# Espejo Cuántico
 
-A Next.js project with Vercel Speed Insights integrated for performance monitoring.
+A Next.js application with Vercel Web Analytics integration.
 
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- A Vercel account (optional, for deployment and Speed Insights dashboard)
+- Node.js 18+ or later
+- pnpm, yarn, npm, or bun
 
 ### Installation
 
-1. Install dependencies:
-
 ```bash
-npm install
-# or
+# Using pnpm
 pnpm install
-# or
+
+# Using yarn
 yarn install
-# or
+
+# Using npm
+npm install
+
+# Using bun
 bun install
 ```
 
-2. Run the development server:
+### Development
 
 ```bash
-npm run dev
-# or
+# Using pnpm
 pnpm dev
-# or
+
+# Using yarn
 yarn dev
-# or
+
+# Using npm
+npm run dev
+
+# Using bun
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Speed Insights Integration
-
-This project has Vercel Speed Insights enabled. The `@vercel/speed-insights` package is integrated in the root layout and will automatically track performance metrics.
-
-### Features
-
-- ✅ Web Vitals tracking (LCP, FID, CLS, etc.)
-- ✅ Real User Monitoring (RUM)
-- ✅ Automatic performance data collection
-- ✅ Privacy-compliant data tracking
-
-### Configuration
-
-Speed Insights is configured in `app/layout.tsx` using the `<SpeedInsights />` component from `@vercel/speed-insights/next`.
-
-To view your performance data:
-
-1. Deploy to Vercel: `vercel deploy`
-2. Go to your [Vercel dashboard](https://vercel.com/dashboard)
-3. Select your project
-4. Click on the **Speed Insights** tab
-
-## Project Structure
-
-```
-├── app/
-│   ├── layout.tsx          # Root layout with Speed Insights
-│   └── page.tsx            # Home page
-├── public/                 # Static files
-├── next.config.ts          # Next.js configuration
-├── tsconfig.json           # TypeScript configuration
-└── package.json            # Dependencies
-```
-
-## Building for Production
+### Building
 
 ```bash
+# Using pnpm
+pnpm build
+pnpm start
+
+# Using yarn
+yarn build
+yarn start
+
+# Using npm
 npm run build
-npm run start
+npm start
+
+# Using bun
+bun run build
+bun start
 ```
+
+## Vercel Web Analytics
+
+This project is configured with [Vercel Web Analytics](https://vercel.com/docs/analytics). The analytics component is integrated into the root layout and will automatically track page views and user interactions when deployed to Vercel.
+
+### Setup Instructions
+
+1. **Enable Web Analytics in Vercel Dashboard**
+   - Go to your project on [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click the **Analytics** tab
+   - Click **Enable**
+
+2. **Deploy to Vercel**
+   ```bash
+   vercel deploy
+   ```
+
+3. **View Your Data**
+   - After deployment, visit [Analytics tab in Vercel Dashboard](https://vercel.com/dashboard)
+   - Data will start appearing after users visit your site
+
+For detailed setup instructions, see [VERCEL_ANALYTICS_SETUP.md](docs/VERCEL_ANALYTICS_SETUP.md).
 
 ## Learn More
 
-- [Vercel Speed Insights Documentation](https://vercel.com/docs/speed-insights)
+- [Vercel Documentation](https://vercel.com/docs)
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Web Vitals](https://web.dev/vitals/)
+- [Vercel Analytics Documentation](https://vercel.com/docs/analytics)
 
-## Deployment
+## License
 
-The easiest way to deploy is with [Vercel](https://vercel.com):
-
-```bash
-vercel deploy
-```
-
-Or connect your Git repository and Vercel will automatically deploy on every push to the main branch.
+This project is open source and available under the MIT License.
