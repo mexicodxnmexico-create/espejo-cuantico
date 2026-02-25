@@ -4,8 +4,23 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Header } from "@/components/Header";
+
+// ⚡ BOLT OPTIMIZATION: Stable style constants to avoid redundant object allocations in the render loop.
+const ITEM_BASE_STYLE = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
+const ITEM_LATEST_STYLE = { ...ITEM_BASE_STYLE, color: "#000" };
+const ITEM_HISTORICAL_STYLE = { ...ITEM_BASE_STYLE, color: "#555" };
+
+// ⚡ BOLT OPTIMIZATION: Memoized item component to achieve O(1) re-renders when history grows.
+// Combined with stable absoluteIndex keys, only the changed items will re-render.
+const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
+  return (
+    <li style={isLatest ? ITEM_LATEST_STYLE : ITEM_HISTORICAL_STYLE}>
+      {isLatest ? "> " : "  "} {entry}
+    </li>
+  );
+});
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
@@ -108,9 +123,11 @@ export default function Home() {
                 const isLatest = i === historyToRender.length - 1;
                 const absoluteIndex = startIndex + i;
                 return (
-                  <li key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#555" }}>
-                    {isLatest ? "> " : "  "} {entry}
-                  </li>
+                  <HistoryItem
+                    key={absoluteIndex}
+                    entry={entry}
+                    isLatest={isLatest}
+                  />
                 );
               })}
             </ul>

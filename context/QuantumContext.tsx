@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -14,6 +14,14 @@ const QuantumContext = createContext<QuantumContextType | undefined>(undefined);
 export function QuantumProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<QuantumSystemState>(INITIAL_STATE);
   const [loading, setLoading] = useState(true);
+
+  // ⚡ BOLT: Stable state reference for reliable persistence without re-binding listeners
+  const stateRef = useRef<QuantumSystemState>(state);
+
+  // Update ref whenever state changes
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Persistence (Addressing "memory" requirement)
   useEffect(() => {
