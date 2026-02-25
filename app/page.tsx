@@ -39,7 +39,7 @@ export default function Home() {
       <main style={{ padding: "4rem 0" }}>
         <section style={{ textAlign: "center", marginBottom: "4rem" }}>
           <h1 style={{ fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" }}>Espejo Cuántico</h1>
-          <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
+          <p role="status" aria-live="polite" style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
             {QuantumEngine.getStatusMessage(state)}
           </p>
         </section>
@@ -118,7 +118,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#999", fontSize: "0.8rem" }}>
+      <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" }}>
         FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {new Date(state.lastUpdate).toLocaleTimeString()}
       </footer>
     </div>
