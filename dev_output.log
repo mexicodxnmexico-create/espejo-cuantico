@@ -7,13 +7,14 @@
 - Network:       http://192.168.0.2:3000
 
 ✓ Starting...
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
-✓ Ready in 641ms
- GET / 200 in 2.3s (compile: 2.0s, render: 263ms)
- GET / 200 in 52ms (compile: 4ms, render: 47ms)
- GET / 200 in 55ms (compile: 3ms, render: 51ms)
- ELIFECYCLE  Command failed.
+✓ Ready in 695ms
+ HEAD / 200 in 904ms (compile: 397ms, render: 507ms)
+ HEAD / 200 in 1168ms (compile: 785ms, render: 384ms)
+ HEAD / 200 in 1414ms (compile: 1049ms, render: 364ms)
+ HEAD / 200 in 1678ms (compile: 1335ms, render: 343ms)
+ HEAD / 200 in 1916ms (compile: 1591ms, render: 326ms)
+ HEAD / 200 in 2.2s (compile: 1876ms, render: 307ms)
+ HEAD / 200 in 2.4s (compile: 2.2s, render: 284ms)
+ HEAD / 200 in 2.7s (compile: 2.4s, render: 269ms)
+ GET / 200 in 71ms (compile: 6ms, render: 65ms)
+ GET / 200 in 52ms (compile: 4ms, render: 48ms)

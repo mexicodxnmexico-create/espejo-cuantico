@@ -15,3 +15,7 @@
 ## 2025-05-22 - Debounced State Persistence
 **Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` during rapid user interactions (e.g., clicking 'Observe' multiple times) can block the main thread and cause UI stuttering.
 **Action:** Implement a debounced persistence mechanism (e.g., 500ms) to consolidate state updates and reduce expensive I/O operations. Also, memoize the context provider value to prevent redundant re-renders of components that don't depend on the state itself.
+
+## 2025-05-23 - Stable Event Listeners with useRef
+**Learning:** Found that `beforeunload` event listeners were depending on the entire `state` object (conceptually, though implementation was broken), which would cause them to be removed and re-added on every state change. Also discovered a critical `ReferenceError` where `stateRef` was accessed but not defined.
+**Action:** Use `useRef` to store the latest state for event handlers. This allows the effect dependency to remain static, stabilizing the event listener and preventing unnecessary DOM operations while ensuring data persistence on unload.
