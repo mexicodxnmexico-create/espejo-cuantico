@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProgressDashboard: React.FC<{ streak: number; achievements: string[]; meditationStats: { totalMeditations: number; longestStreak: number; averageDuration: number; }} = ({ streak, achievements, meditationStats }) => {
+const ProgressDashboard: React.FC<{ streak: number; achievements: string[]; meditationStats: { totalMeditations: number; longestStreak: number; averageDuration: number; }}> = ({ streak, achievements, meditationStats }) => {
     return (
         <div>
             <h1>Meditation Progress Dashboard</h1>
