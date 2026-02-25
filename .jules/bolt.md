@@ -15,3 +15,7 @@
 ## 2025-05-22 - Debounced State Persistence
 **Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` during rapid user interactions (e.g., clicking 'Observe' multiple times) can block the main thread and cause UI stuttering.
 **Action:** Implement a debounced persistence mechanism (e.g., 500ms) to consolidate state updates and reduce expensive I/O operations. Also, memoize the context provider value to prevent redundant re-renders of components that don't depend on the state itself.
+
+## 2025-05-23 - Memoized List Items and Stable Styles
+**Learning:** Even with stable keys and limited list size, re-mapping 50+ items in a single component causes O(n) re-renders of the entire list whenever any item changes. Additionally, using inline style objects causes redundant allocations on every render.
+**Action:** Extract list items into a `memo()` component and use module-scope constants for style objects to achieve O(1) render updates and zero allocation overhead for historical items.
