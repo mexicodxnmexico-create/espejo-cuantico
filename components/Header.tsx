@@ -9,9 +9,14 @@ export const Header = memo(function Header() {
   useEffect(() => {
     let id = localStorage.getItem("quantum_user_id");
     if (!id) {
-      id = typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : Math.random().toString(36).substring(2, 15);
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        id = crypto.randomUUID();
+      } else {
+        // Fallback for older environments that support crypto.getRandomValues but not randomUUID
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+        id = Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+      }
       localStorage.setItem("quantum_user_id", id);
     }
     setUid(id);
