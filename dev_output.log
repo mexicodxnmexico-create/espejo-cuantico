@@ -1,0 +1,20 @@
+
+> espejo-cuantico@0.1.0 dev /app
+> next dev
+
+▲ Next.js 16.1.5 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+
+✓ Starting...
+✓ Ready in 714ms
+ HEAD / 200 in 1164ms (compile: 665ms, render: 499ms)
+ HEAD / 200 in 1413ms (compile: 1043ms, render: 370ms)
+ HEAD / 200 in 1676ms (compile: 1325ms, render: 351ms)
+ HEAD / 200 in 1924ms (compile: 1592ms, render: 331ms)
+ HEAD / 200 in 2.2s (compile: 1871ms, render: 312ms)
+ HEAD / 200 in 2.4s (compile: 2.2s, render: 292ms)
+ HEAD / 200 in 2.7s (compile: 2.4s, render: 267ms)
+ HEAD / 200 in 969ms (compile: 880ms, render: 89ms)
+ GET / 200 in 74ms (compile: 6ms, render: 68ms)
+ GET / 200 in 104ms (compile: 5ms, render: 99ms)
