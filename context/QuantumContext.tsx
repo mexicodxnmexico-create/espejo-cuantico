@@ -16,11 +16,12 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const stateRef = useRef(state);
 
+  // Keep ref in sync for beforeunload listener
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
-  // Persistence (Addressing "memory" requirement)
+  // Initial load
   useEffect(() => {
     try {
       const saved = localStorage.getItem("quantum_state_v2");
@@ -28,55 +29,57 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
         setState(JSON.parse(saved));
       }
     } catch (e) {
-      console.error("Failed to parse quantum state", e);
+      console.error("Failed to load quantum state", e);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ⚡ BOLT OPTIMIZATION: Debounce localStorage saves to reduce main-thread blockage
-  // during rapid state updates. JSON.stringify and setItem are synchronous and expensive.
+  // ⚡ BOLT OPTIMIZATION: Debounced persistence (500ms) to reduce main thread blocking
+  // and O(n) JSON.stringify calls during rapid user interactions.
   useEffect(() => {
     if (loading) return;
 
-    const timeoutId = setTimeout(() => {
+    const handler = setTimeout(() => {
       try {
         localStorage.setItem("quantum_state_v2", JSON.stringify(state));
       } catch (e) {
-        // Handle QuotaExceededError or other storage issues gracefully
         console.error("Failed to save quantum state", e);
       }
     }, 500);
 
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(handler);
   }, [state, loading]);
 
-  // ⚡ BOLT: Ensure state is saved immediately when the tab is closed
+  // ⚡ BOLT OPTIMIZATION: Ensure immediate save on tab closure to prevent data loss
+  // while using the debounce mechanism.
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (!loading && stateRef.current) {
-        try {
-          localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
-        } catch (e) {
-          console.error("Failed to save state on unload", e);
-        }
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+      } catch (e) {
+        console.error("Failed to save quantum state on unload", e);
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [loading]);
+  }, []);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
   // ⚡ BOLT OPTIMIZATION: Memoize context value to prevent unnecessary re-renders
-  // of components that only need dispatch or loading status.
-  const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
+  // of consumers when the provider itself re-renders.
+  const contextValue = useMemo(() => ({
+    state,
+    dispatch,
+    loading
+  }), [state, dispatch, loading]);
 
   return (
-    <QuantumContext.Provider value={value}>
+    <QuantumContext.Provider value={contextValue}>
       {children}
     </QuantumContext.Provider>
   );
