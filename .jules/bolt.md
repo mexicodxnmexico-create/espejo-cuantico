@@ -15,3 +15,7 @@
 ## 2025-05-22 - Debounced State Persistence
 **Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` during rapid user interactions (e.g., clicking 'Observe' multiple times) can block the main thread and cause UI stuttering.
 **Action:** Implement a debounced persistence mechanism (e.g., 500ms) to consolidate state updates and reduce expensive I/O operations. Also, memoize the context provider value to prevent redundant re-renders of components that don't depend on the state itself.
+
+## 2025-05-23 - Memoized List Items for O(1) Updates
+**Learning:** Found that the history list in `app/page.tsx` was re-rendering all items whenever a new entry was added, despite having stable keys. This happened because the items were rendered as raw JSX tags within the map function.
+**Action:** Extracted the list item into a memoized `HistoryItem` component. This reduces re-renders from O(N) to O(1) (specifically the new item and the previous latest item) because React can now skip the reconciliation for unchanged memoized components.

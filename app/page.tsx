@@ -4,8 +4,20 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Header } from "@/components/Header";
+
+// ⚡ BOLT OPTIMIZATION: Memoized component for individual history items.
+// This ensures O(1) re-render performance when new items are added to the list,
+// as only the new item and the previous 'latest' item will re-render.
+const HistoryItem = memo(({ entry, isLatest }: { entry: string; isLatest: boolean }) => {
+  return (
+    <li style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#555" }}>
+      {isLatest ? "> " : "  "} {entry}
+    </li>
+  );
+});
+HistoryItem.displayName = "HistoryItem";
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
@@ -108,9 +120,11 @@ export default function Home() {
                 const isLatest = i === historyToRender.length - 1;
                 const absoluteIndex = startIndex + i;
                 return (
-                  <li key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#555" }}>
-                    {isLatest ? "> " : "  "} {entry}
-                  </li>
+                  <HistoryItem
+                    key={absoluteIndex}
+                    entry={entry}
+                    isLatest={isLatest}
+                  />
                 );
               })}
             </ul>
