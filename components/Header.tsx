@@ -6,7 +6,18 @@ export const Header = memo(function Header() {
   const [uid, setUid] = useState("");
 
   useEffect(() => {
-    setUid(localStorage.getItem("quantum_user_id") || "Identificando...");
+    let storedId = localStorage.getItem("quantum_user_id");
+    if (!storedId) {
+      if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        storedId = crypto.randomUUID();
+      } else {
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+        storedId = Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+      }
+      localStorage.setItem("quantum_user_id", storedId!);
+    }
+    setUid(storedId!);
   }, []);
 
   return (
