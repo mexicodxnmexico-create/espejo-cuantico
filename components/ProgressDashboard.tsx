@@ -108,7 +108,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 )}
             </div>
             <div className="quote-section card-animate">
-                <p className="quote-text"> "Every moment of mindfulness is a step towards inner peace" </p>
+                <p className="quote-text"> &quot;Every moment of mindfulness is a step towards inner peace&quot; </p>
                 <p className="quote-author">— Meditation Journey</p>
             </div>
         </div>

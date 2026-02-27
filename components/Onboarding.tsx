@@ -2,31 +2,33 @@
 
 import { useState, memo, useRef, useEffect } from "react";
 
+// ⚡ BOLT OPTIMIZATION: Define onboarding steps as a top-level constant
+// to prevent redundant array and object creation on every render of the component.
+const ONBOARDING_STEPS = [
+  {
+    title: "Bienvenido al Espejo Cuántico",
+    content: "Has entrado en un espacio de observación y reflejo. Aquí, cada acción altera la coherencia del sistema.",
+  },
+  {
+    title: "Observar es Modificar",
+    content: "En el mundo cuántico, el observador no es neutral. Al mirar el estado del sistema, introduces entropía.",
+  },
+  {
+    title: "Tu Propósito",
+    content: "Mantén la coherencia mientras exploras tus propios reflejos digitales. El colapso es el final, pero también un nuevo comienzo.",
+  },
+];
+
 export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
-
-  const steps = [
-    {
-      title: "Bienvenido al Espejo Cuántico",
-      content: "Has entrado en un espacio de observación y reflejo. Aquí, cada acción altera la coherencia del sistema.",
-    },
-    {
-      title: "Observar es Modificar",
-      content: "En el mundo cuántico, el observador no es neutral. Al mirar el estado del sistema, introduces entropía.",
-    },
-    {
-      title: "Tu Propósito",
-      content: "Mantén la coherencia mientras exploras tus propios reflejos digitales. El colapso es el final, pero también un nuevo comienzo.",
-    },
-  ];
 
   useEffect(() => {
     // Shift focus to the heading when the step changes to announce new content
     headingRef.current?.focus();
   }, [step]);
 
-  if (step >= steps.length) return null;
+  if (step >= ONBOARDING_STEPS.length) return null;
 
   return (
     <div
@@ -62,22 +64,22 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
           tabIndex={-1}
           style={{ marginBottom: "1rem", fontSize: "1.5rem", outline: "none" }}
         >
-          {steps[step].title}
+          {ONBOARDING_STEPS[step].title}
         </h2>
         <p
           id="onboarding-desc"
           style={{ color: "#666", lineHeight: "1.6", marginBottom: "2rem" }}
         >
-          {steps[step].content}
+          {ONBOARDING_STEPS[step].content}
         </p>
 
         <div style={{ marginBottom: "1.5rem", fontSize: "0.875rem", color: "#555", fontWeight: 500 }}>
-          Paso {step + 1} de {steps.length}
+          Paso {step + 1} de {ONBOARDING_STEPS.length}
         </div>
 
         <button
           onClick={() => {
-            if (step === steps.length - 1) {
+            if (step === ONBOARDING_STEPS.length - 1) {
               onComplete();
             }
             setStep(s => s + 1);
@@ -92,7 +94,7 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
             fontWeight: "bold"
           }}
         >
-          {step === steps.length - 1 ? "Entrar al Espejo" : "Siguiente"}
+          {step === ONBOARDING_STEPS.length - 1 ? "Entrar al Espejo" : "Siguiente"}
         </button>
       </div>
     </div>
