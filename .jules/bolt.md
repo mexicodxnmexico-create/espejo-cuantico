@@ -8,10 +8,6 @@
 **Learning:** Found that using `reverse()` on an array before mapping it in React causes O(n) computation and, more importantly, breaks key stability if using indices, leading to O(n) DOM updates.
 **Action:** Use `display: flex; flex-direction: column-reverse;` on the container to achieve visual reversal without array modification. Use absolute indices from the original array as keys to maintain stability, resulting in O(1) updates when new items are appended. Additionally, slice the history to a reasonable limit (e.g., last 50) to avoid DOM bloat.
 
-## 2025-02-06 - Unbounded State Growth
-**Learning:** The `QuantumSystemState.history` array was growing indefinitely, causing increased memory usage and slower `localStorage` serialization (blocking the main thread) as the session duration increased.
-**Action:** Cap the history array to a fixed size (e.g., 100 items) within the state transition logic to ensure constant-time (O(1)) memory usage and serialization performance, regardless of session length.
-
-## 2025-05-22 - Debounced State Persistence
-**Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` during rapid user interactions (e.g., clicking 'Observe' multiple times) can block the main thread and cause UI stuttering.
-**Action:** Implement a debounced persistence mechanism (e.g., 500ms) to consolidate state updates and reduce expensive I/O operations. Also, memoize the context provider value to prevent redundant re-renders of components that don't depend on the state itself.
+## 2025-02-12 - State Persistence & Context Efficiency
+**Learning:** Identifed that synchronous `localStorage` writes on every state change can block the main thread, especially with `JSON.stringify` on growing objects. Also, unmemoized Context Provider values cause unnecessary re-renders for all consumers even if the provider re-renders for non-state reasons.
+**Action:** Implement 500ms debouncing for `localStorage` persistence and wrap the provider value in `useMemo`. Additionally, enforce a 100-item cap on the `history` array in the engine logic to keep the state size (and serialization time) constant and small.
