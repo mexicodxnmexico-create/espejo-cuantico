@@ -75,38 +75,59 @@ export default function Home() {
 
       <Header />
 
-      <main style={MAIN_STYLE}>
-        <section style={HEADER_SECTION_STYLE}>
-          <h1 style={H1_STYLE}>Espejo Cuántico</h1>
-          <p style={H1_SUBTITLE_STYLE}>
-            {statusMessage}
+      <main style={{ padding: "4rem 0" }}>
+        <section style={{ textAlign: "center", marginBottom: "4rem" }}>
+          <h1 style={{ fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" }}>Espejo Cuántico</h1>
+          <p role="status" aria-live="polite" style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
+            {QuantumEngine.getStatusMessage(state)}
           </p>
         </section>
 
-        <div style={GRID_CONTAINER_STYLE}>
-          <div style={CARD_STYLE}>
-            <span style={CARD_LABEL_STYLE}>Coherencia</span>
-            <div style={{ ...VALUE_STYLE, color: state.coherence > 30 ? "#000" : "#ff0000" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" }}>
+          <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" }}>Coherencia</span>
+            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
               {state.coherence}%
             </div>
             <button
               onClick={() => dispatch("OBSERVE")}
               disabled={state.phase === "COLLAPSED"}
-              style={OBSERVE_BUTTON_STYLE}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                borderRadius: "8px",
+                border: "1px solid #000",
+                background: "none",
+                cursor: state.phase === "COLLAPSED" ? "not-allowed" : "pointer",
+                fontWeight: "bold",
+                opacity: state.phase === "COLLAPSED" ? 0.5 : 1
+              }}
+              aria-disabled={state.phase === "COLLAPSED"}
             >
               Observar
             </button>
           </div>
 
-          <div style={CARD_STYLE}>
-            <span style={CARD_LABEL_STYLE}>Entropía</span>
-            <div style={VALUE_STYLE}>
+          <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" }}>Entropía</span>
+            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
               {state.entropy}
             </div>
             <button
               onClick={() => dispatch("REFLECT")}
               disabled={state.phase === "COLLAPSED"}
-              style={REFLECT_BUTTON_STYLE}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                borderRadius: "12px",
+                backgroundColor: "#000",
+                color: "#fff",
+                border: "none",
+                cursor: state.phase === "COLLAPSED" ? "not-allowed" : "pointer",
+                fontWeight: "bold",
+                opacity: state.phase === "COLLAPSED" ? 0.5 : 1
+              }}
+              aria-disabled={state.phase === "COLLAPSED"}
             >
               Reflejar
             </button>
@@ -126,14 +147,30 @@ export default function Home() {
         )}
 
         <section>
-          <h2 style={HISTORY_TITLE_STYLE}>Historial de Eventos</h2>
-          <div style={HISTORY_CONTAINER_STYLE}>
-            <div style={HISTORY_LIST_STYLE}>
+          <h2 style={{ marginBottom: "1.5rem" }}>Historial de Eventos</h2>
+          <div
+            role="log"
+            aria-label="Historial de Eventos"
+            tabIndex={0}
+            style={{
+              backgroundColor: "#fafafa",
+              padding: "1.5rem",
+              borderRadius: "12px",
+              border: "1px solid #eaeaea",
+              height: "200px",
+              overflowY: "auto",
+              fontFamily: "monospace",
+              fontSize: "0.9rem"
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column-reverse" }}>
               {historyToRender.map((entry, i) => {
                 const isLatest = i === historyToRender.length - 1;
                 const absoluteIndex = startIndex + i;
                 return (
-                  <HistoryItem key={absoluteIndex} entry={entry} isLatest={isLatest} />
+                  <div key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#555" }}>
+                    {isLatest ? "> " : "  "} {entry}
+                  </div>
                 );
               })}
             </div>
@@ -141,8 +178,8 @@ export default function Home() {
         </section>
       </main>
 
-      <footer style={FOOTER_STYLE}>
-        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {lastUpdateStr}
+      <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" }}>
+        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {new Date(state.lastUpdate).toLocaleTimeString()}
       </footer>
     </div>
   );
