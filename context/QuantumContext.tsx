@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -37,13 +37,18 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   // ⚡ BOLT OPTIMIZATION: Debounce localStorage saves to reduce main-thread blockage
   // during rapid state updates. JSON.stringify and setItem are synchronous and expensive.
   useEffect(() => {
-    if (!loading) {
-      // ⚡ BOLT: Debounce localStorage saves to reduce blocking synchronous I/O
-      const timeout = setTimeout(() => {
+    if (loading) return;
+
+    const timeoutId = setTimeout(() => {
+      try {
         localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-      }, 500);
-      return () => clearTimeout(timeout);
-    }
+      } catch (e) {
+        // Handle QuotaExceededError or other storage issues gracefully
+        console.error("Failed to save quantum state", e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
   // ⚡ BOLT: Ensure state is saved immediately when the tab is closed
@@ -66,7 +71,8 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
-  // ⚡ BOLT: Memoize provider value to prevent unnecessary re-renders of all consumers
+  // ⚡ BOLT OPTIMIZATION: Memoize context value to prevent unnecessary re-renders
+  // of components that only need dispatch or loading status.
   const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
 
   return (
