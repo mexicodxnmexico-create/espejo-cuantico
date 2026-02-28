@@ -64,46 +64,46 @@ export default function Home() {
     localStorage.setItem("quantum_onboarded", "true");
   }, []);
 
-  if (loading) return <div style={{ padding: "2rem", textAlign: "center" }}>Sincronizando con el núcleo...</div>;
+  if (loading) return <div style={LOADING_STYLE}>Sincronizando con el núcleo...</div>;
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 1rem" }}>
+    <div style={ROOT_CONTAINER_STYLE}>
       {showOnboarding && <Onboarding onComplete={completeOnboarding} />}
 
       <Header />
 
-      <main style={{ padding: "4rem 0" }}>
-        <section style={{ textAlign: "center", marginBottom: "4rem" }}>
-          <h1 style={{ fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" }}>Espejo Cuántico</h1>
-          <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
-            {QuantumEngine.getStatusMessage(state)}
+      <main style={MAIN_STYLE}>
+        <section style={HEADER_SECTION_STYLE}>
+          <h1 style={H1_STYLE}>Espejo Cuántico</h1>
+          <p style={H1_SUBTITLE_STYLE}>
+            {statusMessage}
           </p>
         </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" }}>
-          <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
-            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Coherencia</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
+        <div style={GRID_CONTAINER_STYLE}>
+          <div style={CARD_STYLE}>
+            <span style={CARD_LABEL_STYLE}>Coherencia</span>
+            <div style={{ ...VALUE_STYLE, color: state.coherence > 30 ? "#000" : "#ff0000" }}>
               {state.coherence}%
             </div>
             <button
               onClick={() => dispatch("OBSERVE")}
               disabled={state.phase === "COLLAPSED"}
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "pointer", fontWeight: "bold" }}
+              style={OBSERVE_BUTTON_STYLE}
             >
               Observar
             </button>
           </div>
 
-          <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
-            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Entropía</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
+          <div style={CARD_STYLE}>
+            <span style={CARD_LABEL_STYLE}>Entropía</span>
+            <div style={VALUE_STYLE}>
               {state.entropy}
             </div>
             <button
               onClick={() => dispatch("REFLECT")}
               disabled={state.phase === "COLLAPSED"}
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold" }}
+              style={REFLECT_BUTTON_STYLE}
             >
               Reflejar
             </button>
@@ -113,10 +113,10 @@ export default function Home() {
         <PersonalInsight reflectionCount={state.reflectionCount} />
 
         {state.phase === "COLLAPSED" && (
-          <div style={{ padding: "2rem", backgroundColor: "#fff0f0", borderRadius: "12px", border: "1px solid #ff0000", textAlign: "center", marginBottom: "4rem", marginTop: "4rem" }}>
-            <h3 style={{ color: "#ff0000", margin: 0 }}>SISTEMA COLAPSADO</h3>
+          <div style={COLLAPSED_BANNER_STYLE}>
+            <h3 style={COLLAPSED_TITLE_STYLE}>SISTEMA COLAPSADO</h3>
             <p style={{ margin: "1rem 0" }}>La incoherencia ha alcanzado el punto crítico.</p>
-            <button onClick={() => dispatch("RESET")} style={{ padding: "0.5rem 2rem", backgroundColor: "#ff0000", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+            <button onClick={() => dispatch("RESET")} style={COLLAPSED_BUTTON_STYLE}>
               Restaurar Espejo
             </button>
           </div>
