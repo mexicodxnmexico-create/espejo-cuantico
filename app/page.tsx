@@ -4,8 +4,38 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo, CSSProperties } from "react";
 import { Header } from "@/components/Header";
+
+// ⚡ BOLT OPTIMIZATION: Extract to memoized component to prevent O(n) re-renders
+// Static styles extracted to module scope to prevent allocation overhead
+const HISTORY_ITEM_STYLE: CSSProperties = {
+  marginBottom: "0.5rem",
+  borderBottom: "1px solid #eee",
+  paddingBottom: "0.5rem",
+};
+
+const HistoryItem = memo(function HistoryItem({
+  entry,
+  isLatest,
+  absoluteIndex
+}: {
+  entry: string,
+  isLatest: boolean,
+  absoluteIndex: number
+}) {
+  const style = useMemo(() => ({
+    ...HISTORY_ITEM_STYLE,
+    color: isLatest ? "#000" : "#555" // #555 used for WCAG contrast compliance
+  }), [isLatest]);
+
+  return (
+    <div key={absoluteIndex} style={style}>
+      {isLatest ? "> " : "  "} {entry}
+    </div>
+  );
+});
+HistoryItem.displayName = "HistoryItem";
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
@@ -15,6 +45,12 @@ export default function Home() {
   // This keeps keys stable (O(1) updates) and avoids O(n) reverse() calls.
   const historyToRender = useMemo(() => state.history.slice(-50), [state.history]);
   const startIndex = Math.max(0, state.history.length - 50);
+
+  // ⚡ BOLT OPTIMIZATION: Memoize expensive date parsing/formatting in render body
+  const formattedLastUpdate = useMemo(
+    () => new Date(state.lastUpdate).toLocaleTimeString(),
+    [state.lastUpdate]
+  );
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
@@ -39,14 +75,14 @@ export default function Home() {
       <main style={{ padding: "4rem 0" }}>
         <section style={{ textAlign: "center", marginBottom: "4rem" }}>
           <h1 style={{ fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" }}>Espejo Cuántico</h1>
-          <p role="status" aria-live="polite" style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
+          <p style={{ fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
             {QuantumEngine.getStatusMessage(state)}
           </p>
         </section>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" }}>
           <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
-            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" }}>Coherencia</span>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Coherencia</span>
             <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
               {state.coherence}%
             </div>
@@ -60,7 +96,7 @@ export default function Home() {
           </div>
 
           <div style={{ padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" }}>
-            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" }}>Entropía</span>
+            <span style={{ fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" }}>Entropía</span>
             <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
               {state.entropy}
             </div>
@@ -88,38 +124,32 @@ export default function Home() {
 
         <section>
           <h2 style={{ marginBottom: "1.5rem" }}>Historial de Eventos</h2>
-          <div
-            role="log"
-            aria-label="Historial de eventos"
-            tabIndex={0}
-            style={{
-              backgroundColor: "#fafafa",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              border: "1px solid #eaeaea",
-              height: "200px",
-              overflowY: "auto",
-              fontFamily: "monospace",
-              fontSize: "0.9rem"
-            }}
-          >
-            <ul style={{ display: "flex", flexDirection: "column-reverse", listStyle: "none", padding: 0, margin: 0 }}>
-              {historyToRender.map((entry, i) => {
-                const isLatest = i === historyToRender.length - 1;
-                const absoluteIndex = startIndex + i;
-                return (
-                  <li key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#555" }}>
-                    {isLatest ? "> " : "  "} {entry}
-                  </li>
-                );
-              })}
-            </ul>
+          <div style={{
+            backgroundColor: "#fafafa",
+            padding: "1.5rem",
+            borderRadius: "12px",
+            border: "1px solid #eaeaea",
+            height: "200px",
+            overflowY: "auto",
+            fontFamily: "monospace",
+            fontSize: "0.9rem"
+          }}>
+            <div style={{ display: "flex", flexDirection: "column-reverse" }}>
+              {historyToRender.map((entry, i) => (
+                <HistoryItem
+                  key={startIndex + i}
+                  entry={entry}
+                  isLatest={i === historyToRender.length - 1}
+                  absoluteIndex={startIndex + i}
+                />
+              ))}
+            </div>
           </div>
         </section>
       </main>
 
-      <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" }}>
-        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {new Date(state.lastUpdate).toLocaleTimeString()}
+      <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#999", fontSize: "0.8rem" }}>
+        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {formattedLastUpdate}
       </footer>
     </div>
   );
