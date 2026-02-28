@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
+import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@shared/quantum-engine";
 
 interface QuantumContextType {
   state: QuantumSystemState;

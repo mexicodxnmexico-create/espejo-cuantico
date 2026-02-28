@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuantum } from "@/context/QuantumContext";
-import { QuantumEngine } from "@/lib/quantum-engine";
+import { QuantumEngine } from "@shared/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
