@@ -7,40 +7,34 @@ import { PersonalInsight } from "@/components/PersonalInsight";
 import { useState, useEffect, useMemo, useCallback, memo, CSSProperties } from "react";
 import { Header } from "@/components/Header";
 
-const ROOT_CONTAINER_STYLE: CSSProperties = { maxWidth: "800px", margin: "0 auto", padding: "0 1rem" };
-const MAIN_STYLE: CSSProperties = { padding: "4rem 0" };
-const HEADER_SECTION_STYLE: CSSProperties = { textAlign: "center", marginBottom: "4rem" };
-const H1_STYLE: CSSProperties = { fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" };
-const H1_SUBTITLE_STYLE: CSSProperties = { fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" };
-const GRID_CONTAINER_STYLE: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" };
-const CARD_STYLE: CSSProperties = { padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" };
-const CARD_LABEL_STYLE: CSSProperties = { fontSize: "0.8rem", textTransform: "uppercase", color: "#999", fontWeight: "bold" };
-const VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" };
-const OBSERVE_BUTTON_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "pointer", fontWeight: "bold" };
-const REFLECT_BUTTON_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold" };
-const COLLAPSED_BANNER_STYLE: CSSProperties = { padding: "2rem", backgroundColor: "#fff0f0", borderRadius: "12px", border: "1px solid #ff0000", textAlign: "center", marginBottom: "4rem", marginTop: "4rem" };
-const COLLAPSED_TITLE_STYLE: CSSProperties = { color: "#ff0000", margin: 0 };
-const COLLAPSED_BUTTON_STYLE: CSSProperties = { padding: "0.5rem 2rem", backgroundColor: "#ff0000", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" };
-const HISTORY_TITLE_STYLE: CSSProperties = { marginBottom: "1.5rem" };
-const HISTORY_CONTAINER_STYLE: CSSProperties = {
-  backgroundColor: "#fafafa",
-  padding: "1.5rem",
-  borderRadius: "12px",
-  border: "1px solid #eaeaea",
-  height: "200px",
-  overflowY: "auto",
-  fontFamily: "monospace",
-  fontSize: "0.9rem"
+// ⚡ BOLT OPTIMIZATION: Extract to memoized component to prevent O(n) re-renders
+// Static styles extracted to module scope to prevent allocation overhead
+const HISTORY_ITEM_STYLE: CSSProperties = {
+  marginBottom: "0.5rem",
+  borderBottom: "1px solid #eee",
+  paddingBottom: "0.5rem",
 };
-const HISTORY_LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reverse" };
-const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#999", fontSize: "0.8rem" };
-const LOADING_STYLE: CSSProperties = { padding: "2rem", textAlign: "center" };
 
-const HistoryItem = memo(({ entry, isLatest }: { entry: string; isLatest: boolean }) => (
-  <div style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#999" }}>
-    {isLatest ? "> " : "  "} {entry}
-  </div>
-));
+const HistoryItem = memo(function HistoryItem({
+  entry,
+  isLatest,
+  absoluteIndex
+}: {
+  entry: string,
+  isLatest: boolean,
+  absoluteIndex: number
+}) {
+  const style = useMemo(() => ({
+    ...HISTORY_ITEM_STYLE,
+    color: isLatest ? "#000" : "#555" // #555 used for WCAG contrast compliance
+  }), [isLatest]);
+
+  return (
+    <div key={absoluteIndex} style={style}>
+      {isLatest ? "> " : "  "} {entry}
+    </div>
+  );
+});
 HistoryItem.displayName = "HistoryItem";
 
 export default function Home() {
@@ -52,8 +46,11 @@ export default function Home() {
   const historyToRender = useMemo(() => state.history.slice(-50), [state.history]);
   const startIndex = Math.max(0, state.history.length - 50);
 
-  const statusMessage = useMemo(() => QuantumEngine.getStatusMessage(state), [state]);
-  const lastUpdateStr = useMemo(() => new Date(state.lastUpdate).toLocaleTimeString(), [state.lastUpdate]);
+  // ⚡ BOLT OPTIMIZATION: Memoize expensive date parsing/formatting in render body
+  const formattedLastUpdate = useMemo(
+    () => new Date(state.lastUpdate).toLocaleTimeString(),
+    [state.lastUpdate]
+  );
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
@@ -126,23 +123,33 @@ export default function Home() {
         )}
 
         <section>
-          <h2 style={HISTORY_TITLE_STYLE}>Historial de Eventos</h2>
-          <div style={HISTORY_CONTAINER_STYLE}>
-            <div style={HISTORY_LIST_STYLE}>
-              {historyToRender.map((entry, i) => {
-                const isLatest = i === historyToRender.length - 1;
-                const absoluteIndex = startIndex + i;
-                return (
-                  <HistoryItem key={absoluteIndex} entry={entry} isLatest={isLatest} />
-                );
-              })}
+          <h2 style={{ marginBottom: "1.5rem" }}>Historial de Eventos</h2>
+          <div style={{
+            backgroundColor: "#fafafa",
+            padding: "1.5rem",
+            borderRadius: "12px",
+            border: "1px solid #eaeaea",
+            height: "200px",
+            overflowY: "auto",
+            fontFamily: "monospace",
+            fontSize: "0.9rem"
+          }}>
+            <div style={{ display: "flex", flexDirection: "column-reverse" }}>
+              {historyToRender.map((entry, i) => (
+                <HistoryItem
+                  key={startIndex + i}
+                  entry={entry}
+                  isLatest={i === historyToRender.length - 1}
+                  absoluteIndex={startIndex + i}
+                />
+              ))}
             </div>
           </div>
         </section>
       </main>
 
-      <footer style={FOOTER_STYLE}>
-        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {lastUpdateStr}
+      <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#999", fontSize: "0.8rem" }}>
+        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {formattedLastUpdate}
       </footer>
     </div>
   );

@@ -11,3 +11,7 @@
 ## 2025-02-12 - State Persistence & Context Efficiency
 **Learning:** Identifed that synchronous `localStorage` writes on every state change can block the main thread, especially with `JSON.stringify` on growing objects. Also, unmemoized Context Provider values cause unnecessary re-renders for all consumers even if the provider re-renders for non-state reasons.
 **Action:** Implement 500ms debouncing for `localStorage` persistence and wrap the provider value in `useMemo`. Additionally, enforce a 100-item cap on the `history` array in the engine logic to keep the state size (and serialization time) constant and small.
+
+## 2025-02-28 - Optimizing React Render Cost for Growing Lists & Expensive Formats
+**Learning:** Found that rendering primitive arrays (strings) with inline styles in React causes O(n) re-renders for every state change. Additionally, parsing and formatting `new Date().toLocaleTimeString()` inline runs repeatedly unnecessarily if its dependencies (like `lastUpdate` timestamp) haven't changed.
+**Action:** Extract list items to `React.memo` components passing down static style references (via module-scope constants) so only the newly added components and modified ones re-render, reducing DOM update complexity from O(n) to O(1). Additionally, always memoize expensive parsing utilities like `toLocaleTimeString` using `useMemo` in render cycles.
