@@ -2,25 +2,25 @@
 
 import { useState, memo } from "react";
 
-const ONBOARDING_STEPS = [
-  {
-    title: "Bienvenido al Espejo Cuántico",
-    content: "Has entrado en un espacio de observación y reflejo. Aquí, cada acción altera la coherencia del sistema.",
-  },
-  {
-    title: "Observar es Modificar",
-    content: "En el mundo cuántico, el observador no es neutral. Al mirar el estado del sistema, introduces entropía.",
-  },
-  {
-    title: "Tu Propósito",
-    content: "Mantén la coherencia mientras exploras tus propios reflejos digitales. El colapso es el final, pero también un nuevo comienzo.",
-  },
-];
-
 export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(0);
 
-  if (step >= ONBOARDING_STEPS.length) return null;
+  const steps = [
+    {
+      title: "Bienvenido al Espejo Cuántico",
+      content: "Has entrado en un espacio de observación y reflejo. Aquí, cada acción altera la coherencia del sistema.",
+    },
+    {
+      title: "Observar es Modificar",
+      content: "En el mundo cuántico, el observador no es neutral. Al mirar el estado del sistema, introduces entropía.",
+    },
+    {
+      title: "Tu Propósito",
+      content: "Mantén la coherencia mientras exploras tus propios reflejos digitales. El colapso es el final, pero también un nuevo comienzo.",
+    },
+  ];
+
+  if (step >= steps.length) return null;
 
   return (
     <div style={{
@@ -44,11 +44,11 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
         width: "100%",
         textAlign: "center"
       }}>
-        <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem" }}>{ONBOARDING_STEPS[step].title}</h2>
-        <p style={{ color: "#666", lineHeight: "1.6", marginBottom: "2rem" }}>{ONBOARDING_STEPS[step].content}</p>
+        <h2 style={{ marginBottom: "1rem", fontSize: "1.5rem" }}>{steps[step].title}</h2>
+        <p style={{ color: "#666", lineHeight: "1.6", marginBottom: "2rem" }}>{steps[step].content}</p>
         <button
           onClick={() => {
-            if (step === ONBOARDING_STEPS.length - 1) {
+            if (step === steps.length - 1) {
               onComplete();
             }
             setStep(s => s + 1);
@@ -63,7 +63,7 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
             fontWeight: "bold"
           }}
         >
-          {step === ONBOARDING_STEPS.length - 1 ? "Entrar al Espejo" : "Siguiente"}
+          {step === steps.length - 1 ? "Entrar al Espejo" : "Siguiente"}
         </button>
       </div>
     </div>
