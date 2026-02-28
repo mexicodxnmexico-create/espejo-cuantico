@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
@@ -16,57 +16,49 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const stateRef = useRef(state);
 
+  // Update ref to always have the latest state for the beforeunload listener
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
   // Persistence (Addressing "memory" requirement)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("quantum_state_v2");
-      if (saved) {
+    const saved = localStorage.getItem("quantum_state_v2");
+    if (saved) {
+      try {
         setState(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse quantum state", e);
       }
-    } catch (e) {
-      console.error("Failed to parse quantum state", e);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }, []);
 
-  // ⚡ BOLT OPTIMIZATION: Debounce localStorage saves to reduce main-thread blockage
-  // during rapid state updates. JSON.stringify and setItem are synchronous and expensive.
   useEffect(() => {
-    if (!loading) {
-      // ⚡ BOLT: Debounce localStorage saves to reduce blocking synchronous I/O
-      const timeout = setTimeout(() => {
-        localStorage.setItem("quantum_state_v2", JSON.stringify(state));
-      }, 500);
-      return () => clearTimeout(timeout);
-    }
+    if (loading) return;
+
+    // ⚡ BOLT OPTIMIZATION: Debounce localStorage persistence to reduce main-thread load
+    // during frequent state updates.
+    const timer = setTimeout(() => {
+      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [state, loading]);
 
-  // ⚡ BOLT: Ensure state is saved immediately when the tab is closed
+  // ⚡ BOLT OPTIMIZATION: Ensure latest state is saved on tab close/refresh
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (!loading && stateRef.current) {
-        try {
-          localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
-        } catch (e) {
-          console.error("Failed to save state on unload", e);
-        }
-      }
+      localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [loading]);
+  }, []);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
-  // ⚡ BOLT: Memoize provider value to prevent unnecessary re-renders of all consumers
   const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
 
   return (

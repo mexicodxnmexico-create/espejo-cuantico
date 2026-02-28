@@ -15,7 +15,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -26,9 +26,7 @@
     "allowJs": true,
     "incremental": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "plugins": [
       {
@@ -39,8 +37,7 @@
   "include": [
     "app",
     ".next/types/**/*.ts",
-    "next-env.d.ts",
-    ".next/dev/types/**/*.ts"
+    "next-env.d.ts"
   ],
   "exclude": [
     "node_modules"
