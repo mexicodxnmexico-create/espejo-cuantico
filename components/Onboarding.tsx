@@ -71,7 +71,7 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
           {steps[step].content}
         </p>
 
-        <div style={{ marginBottom: "1.5rem", fontSize: "0.875rem", color: "#888", fontWeight: 500 }}>
+        <div style={{ marginBottom: "1.5rem", fontSize: "0.875rem", color: "#555", fontWeight: 500 }}>
           Paso {step + 1} de {steps.length}
         </div>
 

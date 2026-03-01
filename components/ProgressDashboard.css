@@ -1,0 +1,42 @@
+/* ProgressDashboard Custom Styles */
+.dashboard-container { @apply bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen py-12 px-4 sm:px-6 lg:px-8; }
+.dashboard-header { @apply text-center mb-12 animate-fade-in; max-width: 800px; margin-left: auto; margin-right: auto; }
+.dashboard-grid { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12; max-width: 1400px; margin-left: auto; margin-right: auto; }
+.stat-card { @apply bg-gradient-to-br rounded-2xl p-6 text-center relative overflow-hidden shadow-xl transition-all duration-300 hover:shadow-2xl; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+.stat-card::before { content: ''; @apply absolute inset-0 opacity-0 transition-opacity duration-300; background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent); }
+.stat-card:hover::before { @apply opacity-100; }
+.stat-card:hover { @apply transform -translate-y-2; }
+.streak-card { @apply from-orange-500 to-red-600; }
+.meditation-card { @apply from-blue-500 to-cyan-600; }
+.longest-card { @apply from-yellow-400 to-orange-500; }
+.duration-card { @apply from-green-500 to-emerald-600; }
+.weekly-card { @apply from-indigo-600 to-purple-700; }
+.card-icon { @apply text-5xl mb-3 inline-block transition-transform duration-300; }
+.stat-card:hover .card-icon { @apply transform scale-110 rotate-12; }
+.card-title { @apply text-white font-semibold text-sm uppercase tracking-wider mb-2; opacity: 0.9; }
+.stat-number { @apply text-4xl font-bold text-white mb-1; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+.stat-label { @apply text-white text-xs mb-4; opacity: 0.8; }
+.card-progress { @apply w-full h-1 bg-white rounded-full overflow-hidden; opacity: 0.3; }
+.progress-bar { @apply h-full rounded-full transition-all duration-1000; animation: fillProgress 2s ease-out forwards; }
+.streak-progress { @apply bg-white; width: 75%; }
+.meditation-progress { @apply bg-white; width: 60%; }
+.longest-progress { @apply bg-white; width: 85%; }
+.duration-progress { @apply bg-white; width: 65%; }
+.weekly-progress { @apply bg-gradient-to-r from-purple-400 to-pink-400; }
+.achievements-section { @apply bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 mb-8 max-w-1400px mx-auto; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+.achievements-grid { @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4; }
+.achievement-badge { @apply bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg p-4 text-center transition-all duration-300 cursor-pointer; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; transform: scale(0); }
+.achievement-badge:hover { @apply transform scale-110 shadow-lg; }
+.achievement-icon { @apply text-3xl mb-2 block transition-transform duration-300; }
+.achievement-badge:hover .achievement-icon { @apply transform scale-125 rotate-12; }
+.achievement-name { @apply text-white font-semibold text-sm; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); }
+.quote-section { @apply bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 rounded-2xl p-8 text-center max-w-1400px mx-auto; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+.quote-text { @apply text-2xl font-bold text-white mb-2; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
+.quote-author { @apply text-white text-sm; opacity: 0.9; }
+@keyframes fillProgress { from { width: 0; } to { width: inherit; } }
+@keyframes popIn { 0% { opacity: 0; transform: scale(0) rotate(-180deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+.card-animate { animation: fadeIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-fade-in { animation: fadeIn 0.6s ease-out; }
+@media (max-width: 768px) { .dashboard-grid { @apply grid-cols-1; } .weekly-card { @apply col-span-full; } .stat-number { @apply text-3xl; } .achievements-grid { @apply grid-cols-2 sm:grid-cols-3; } }
+@layer utilities { .transition-smooth { @apply transition-all duration-300 ease-out; } .glass-effect { backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); } .glow-effect { box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); } }
