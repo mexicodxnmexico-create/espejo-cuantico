@@ -109,7 +109,12 @@ export default function Home() {
             <button
               onClick={() => dispatch("OBSERVE")}
               disabled={state.phase === "COLLAPSED"}
-              style={OBSERVE_BTN_STYLE}
+              title={state.phase === "COLLAPSED" ? "El sistema ha colapsado. Restaura el espejo para continuar." : ""}
+              style={{
+                ...OBSERVE_BTN_STYLE,
+                opacity: state.phase === "COLLAPSED" ? 0.5 : 1,
+                cursor: state.phase === "COLLAPSED" ? "not-allowed" : "pointer"
+              }}
             >
               Observar
             </button>
@@ -123,7 +128,12 @@ export default function Home() {
             <button
               onClick={() => dispatch("REFLECT")}
               disabled={state.phase === "COLLAPSED"}
-              style={REFLECT_BTN_STYLE}
+              title={state.phase === "COLLAPSED" ? "El sistema ha colapsado. Restaura el espejo para continuar." : ""}
+              style={{
+                ...REFLECT_BTN_STYLE,
+                opacity: state.phase === "COLLAPSED" ? 0.5 : 1,
+                cursor: state.phase === "COLLAPSED" ? "not-allowed" : "pointer"
+              }}
             >
               Reflejar
             </button>
