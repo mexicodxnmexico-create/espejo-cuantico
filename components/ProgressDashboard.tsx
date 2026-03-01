@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
 import './ProgressDashboard.css';
 
 interface MeditationStats {
@@ -22,12 +22,21 @@ interface ProgressDashboardProps {
     meditationStats: MeditationStats;
 }
 
-const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
+const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
     streak,
     achievements,
     meditationStats,
 }) => {
     const progressPercentage = (meditationStats.completedThisWeek / meditationStats.weeklyTarget) * 100;
+
+    // ⚡ BOLT OPTIMIZATION: Memoize formatted dates to prevent O(n) Date parsing
+    // and localization calls on every render.
+    const formattedAchievements = useMemo(() => {
+        return achievements.map(a => ({
+            ...a,
+            formattedDate: new Date(a.unlockedDate).toLocaleDateString()
+        }));
+    }, [achievements]);
 
     return (
         <div className="dashboard-container">
@@ -91,14 +100,14 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </div>
             <div className="achievements-section card-animate">
                 <h2 className="text-2xl font-bold text-white mb-6">🏅 Achievements Unlocked</h2>
-                {achievements.length > 0 ? (
+                {formattedAchievements.length > 0 ? (
                     <div className="achievements-grid">
-                        {achievements.map((achievement, index) => (
+                        {formattedAchievements.map((achievement, index) => (
                             <div key={achievement.id} className="achievement-badge" style={{ animationDelay: `${index * 0.1}s` }}>
                                 <div className="achievement-icon">{achievement.icon}</div>
                                 <p className="achievement-name">{achievement.name}</p>
                                 <p className="achievement-date text-xs text-gray-400">
-                                    {new Date(achievement.unlockedDate).toLocaleDateString()}
+                                    {achievement.formattedDate}
                                 </p>
                             </div>
                         ))}
@@ -108,11 +117,13 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 )}
             </div>
             <div className="quote-section card-animate">
-                <p className="quote-text"> "Every moment of mindfulness is a step towards inner peace" </p>
+                <p className="quote-text"> &quot;Every moment of mindfulness is a step towards inner peace&quot; </p>
                 <p className="quote-author">— Meditation Journey</p>
             </div>
         </div>
     );
-};
+});
+
+ProgressDashboard.displayName = 'ProgressDashboard';
 
 export default ProgressDashboard;
