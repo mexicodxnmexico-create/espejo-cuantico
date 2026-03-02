@@ -9,6 +9,25 @@ export interface QuantumSystemState {
   lastUpdate: number;
 }
 
+
+
+export function isValidQuantumPhase(phase: any): phase is QuantumPhase {
+  return ["IDLE", "OBSERVING", "REFLECTING", "ENTANGLED", "COLLAPSED"].includes(phase);
+}
+
+export function isValidQuantumState(state: any): state is QuantumSystemState {
+  if (!state || typeof state !== 'object') return false;
+
+  return (
+    isValidQuantumPhase(state.phase) &&
+    typeof state.coherence === 'number' &&
+    typeof state.entropy === 'number' &&
+    Array.isArray(state.history) &&
+    state.history.every((item: any) => typeof item === 'string') &&
+    typeof state.reflectionCount === 'number' &&
+    typeof state.lastUpdate === 'number'
+  );
+}
 export const INITIAL_STATE: QuantumSystemState = {
   phase: "IDLE",
   coherence: 100,
