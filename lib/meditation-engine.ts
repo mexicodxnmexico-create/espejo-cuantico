@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 // Meditation Engine Logic
 
 class MeditationEngine {
@@ -40,5 +41,5 @@ const engine = new MeditationEngine();
 const session1 = engine.startSession(600); // 10 minutes
 setTimeout(() => {
     engine.endSession(session1);
-    console.log(`Session progress: ${engine.getProgress()}%`);
+    logger.log(`Session progress: ${engine.getProgress()}%`);
 }, 10000); // Ends session after 10 seconds
