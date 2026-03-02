@@ -28,3 +28,21 @@ test('History should keep the most recent items when capped', (t) => {
     assert.strictEqual(state.history[0], "Older 2");
     assert.strictEqual(state.history[99], "Observación registrada. La entropía aumenta.");
 });
+
+test('Engine should transition to COLLAPSED state when coherence drops to 0 or below', (t) => {
+    let state = { ...INITIAL_STATE, coherence: 1 };
+
+    // Perform transition that reduces coherence by 1
+    state = QuantumEngine.transition(state, "OBSERVE");
+
+    assert.strictEqual(state.coherence, 0, 'Coherence should be 0');
+    assert.strictEqual(state.phase, 'COLLAPSED', 'Phase should transition to COLLAPSED when coherence is <= 0');
+
+    // Test going below 0 (though logic caps at 0, if it was possible)
+    let stateBelow0 = { ...INITIAL_STATE, coherence: 0 };
+    // Force coherence to something negative before secondary rules
+    // (We test REFLECT with coherence <= 20 since it goes directly to COLLAPSED)
+    let stateReflectCollapse = QuantumEngine.transition({ ...INITIAL_STATE, coherence: 20 }, "REFLECT");
+
+    assert.strictEqual(stateReflectCollapse.phase, 'COLLAPSED', 'Phase should transition to COLLAPSED directly via REFLECT on low coherence');
+});
