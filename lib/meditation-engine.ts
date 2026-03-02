@@ -22,12 +22,18 @@ class MeditationEngine {
     }
 
     calculateProgress() {
-        const totalDuration = this.sessions.reduce((acc, session) => acc + session.duration, 0);
-        const completedDuration = this.sessions.reduce((acc, session) => {
-            const endTime = session.endTime ? session.endTime.getTime() : new Date().getTime();
-            return acc + (endTime - session.startTime.getTime()) / 1000;
-        }, 0);
-        this.progress = (completedDuration / totalDuration) * 100;
+        let totalDuration = 0;
+        let completedDuration = 0;
+        const now = Date.now();
+
+        for (let i = 0; i < this.sessions.length; i++) {
+            const session = this.sessions[i];
+            totalDuration += session.duration;
+            const endTime = session.endTime ? session.endTime.getTime() : now;
+            completedDuration += (endTime - session.startTime.getTime()) / 1000;
+        }
+
+        this.progress = totalDuration > 0 ? (completedDuration / totalDuration) * 100 : 0;
     }
 
     getProgress() {
