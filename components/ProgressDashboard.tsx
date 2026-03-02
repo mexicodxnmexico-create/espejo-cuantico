@@ -1,5 +1,7 @@
 import React, { useMemo, memo } from 'react';
 import './ProgressDashboard.css';
+import { calculateProgressPercentage } from '../lib/progress-utils';
+
 
 interface MeditationStats {
     totalMeditations: number;
@@ -27,7 +29,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
     achievements,
     meditationStats,
 }) => {
-    const progressPercentage = (meditationStats.completedThisWeek / meditationStats.weeklyTarget) * 100;
+    const progressPercentage = calculateProgressPercentage(meditationStats.completedThisWeek, meditationStats.weeklyTarget);
 
     // ⚡ BOLT OPTIMIZATION: Memoize formatted dates to prevent O(n) Date parsing
     // and localization calls on every render.
