@@ -19,3 +19,7 @@
 ## 2025-06-21 - Render Loop O(n) Date Parsing
 **Learning:** Found that invoking `new Date().toLocaleDateString()` inside a `map` function during the render cycle of a list (e.g., in `ProgressDashboard.tsx`) causes significant O(n) overhead due to repetitive string and object instantiations.
 **Action:** Extract expensive formatting operations into a `useMemo` hook that pre-calculates the formatted values. Then map over the memoized array, reducing the cost to O(1) for re-renders where the source array hasn't changed.
+
+## 2025-07-15 - Static Constant Extraction and Dependency Narrowing
+**Learning:** Found that widespread use of inline styles and static data arrays (like onboarding steps) was causing significant object allocation pressure during rapid state updates. Additionally, broad useMemo dependencies (e.g., depending on the entire `state` object) caused redundant recalculations for pure functions like `getStatusMessage`.
+**Action:** Extract all static styles and data to module-level constants. Narrow useMemo dependency arrays to only include the specific primitive properties required by the calculation.

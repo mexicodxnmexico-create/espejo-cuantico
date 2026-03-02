@@ -38,15 +38,19 @@ const LOG_CONTAINER_STYLE: CSSProperties = {
 };
 const LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reverse", listStyle: "none", padding: 0, margin: 0 };
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
+const VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" };
+
 const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
+
+// ⚡ BOLT OPTIMIZATION: Static style constants for HistoryItem
+// Using static objects instead of useMemo for conditional styles to further reduce runtime overhead.
+const LATEST_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
+const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
 
 // ⚡ BOLT OPTIMIZATION: Memoized HistoryItem component
 // Prevents re-rendering of existing history items when a new one is added.
 const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
-  const style = useMemo<CSSProperties>(() => ({
-    ...HISTORY_ITEM_STYLE_BASE,
-    color: isLatest ? "#000" : "#555"
-  }), [isLatest]);
+  const style = isLatest ? LATEST_HISTORY_ITEM_STYLE : NORMAL_HISTORY_ITEM_STYLE;
 
   return (
     <li style={style}>
@@ -64,9 +68,11 @@ export default function Home() {
   const historyToRender = useMemo(() => state.history.slice(-50), [state.history]);
   const startIndex = Math.max(0, state.history.length - 50);
 
-  // ⚡ BOLT OPTIMIZATION: Memoize status message
-  // Prevents string allocation and calculation on every render.
-  const statusMessage = useMemo(() => QuantumEngine.getStatusMessage(state), [state]);
+  // ⚡ BOLT OPTIMIZATION: Memoize status message with precise dependencies
+  // Prevents string allocation and calculation unless phase or coherence actually changes.
+  // narrowing the dependency array avoids recalculation when other state properties change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const statusMessage = useMemo(() => QuantumEngine.getStatusMessage(state), [state.phase, state.coherence]);
 
   // ⚡ BOLT OPTIMIZATION: Memoize date string
   // toLocaleTimeString is expensive to call in render loop if not needed
@@ -103,7 +109,7 @@ export default function Home() {
         <div style={GRID_STYLE}>
           <div style={CARD_STYLE}>
             <span style={CARD_LABEL_STYLE}>Coherencia</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
+            <div style={{ ...VALUE_STYLE, color: state.coherence > 30 ? "#000" : "#ff0000" }}>
               {state.coherence}%
             </div>
             <button
@@ -117,7 +123,7 @@ export default function Home() {
 
           <div style={CARD_STYLE}>
             <span style={CARD_LABEL_STYLE}>Entropía</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
+            <div style={VALUE_STYLE}>
               {state.entropy}
             </div>
             <button
