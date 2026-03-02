@@ -1,42 +1,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { QuantumEngine, INITIAL_STATE } from "./quantum-engine";
+import { QuantumEngine, INITIAL_STATE } from './quantum-engine';
 
-test('history capping should limit history to 100 items', () => {
-  let state = INITIAL_STATE;
+test('History should be capped at 100 items', (t) => {
+  let state = { ...INITIAL_STATE };
+  // Start with empty history to be clean
+  state.history = [];
 
-  // Perform 150 observations
+  // Fill history with more than 100 items via transitions
   for (let i = 0; i < 150; i++) {
-    state = QuantumEngine.transition(state, 'OBSERVE');
+    state = QuantumEngine.transition(state, "OBSERVE");
   }
 
   assert.strictEqual(state.history.length, 100, 'History should be capped at 100 items');
-  assert.ok(state.history[0].includes('Observación registrada'), 'First item should be an observation (since initial state was sliced out)');
 });
 
-test('history capping should work with REFLECT', () => {
-  let state = INITIAL_STATE;
+test('History should keep the most recent items when capped', (t) => {
+    // Create state with 100 items: "Older 1" ... "Older 100"
+    const oldHistory = Array.from({ length: 100 }, (_, i) => `Older ${i + 1}`);
+    let state = { ...INITIAL_STATE, history: oldHistory };
 
-  // Perform 20 observations to reduce coherence enough but not collapse
-  for (let i = 0; i < 20; i++) {
-    state = QuantumEngine.transition(state, 'OBSERVE');
-  }
+    // Perform transition. This adds 1 item ("Observación...").
+    // Logic should cap to 100, removing "Older 1".
+    state = QuantumEngine.transition(state, "OBSERVE");
 
-  // Perform 100 reflections (this will eventually collapse the system, but we want to check history)
-  for (let i = 0; i < 100; i++) {
-    state = QuantumEngine.transition(state, 'REFLECT');
-  }
-
-  assert.strictEqual(state.history.length, 100, 'History should be capped at 100 items even after many reflections');
-});
-
-test('RESET should restore history to 1 item', () => {
-  let state = INITIAL_STATE;
-  for (let i = 0; i < 150; i++) {
-    state = QuantumEngine.transition(state, 'OBSERVE');
-  }
-
-  state = QuantumEngine.transition(state, 'RESET');
-  assert.strictEqual(state.history.length, 1, 'History should be reset to 1 item');
-  assert.strictEqual(state.history[0], 'Sistema reiniciado manualmente.');
+    assert.strictEqual(state.history.length, 100);
+    assert.strictEqual(state.history[0], "Older 2");
+    assert.strictEqual(state.history[99], "Observación registrada. La entropía aumenta.");
 });

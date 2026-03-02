@@ -40,19 +40,38 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     // ⚡ BOLT OPTIMIZATION: Debounce localStorage persistence to reduce main-thread load
     // during frequent state updates.
     const timer = setTimeout(() => {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(state));
+      } catch (e) {
+        console.error("Failed to persist state", e);
+      }
     }, 500);
 
     return () => clearTimeout(timer);
   }, [state, loading]);
 
-  // ⚡ BOLT OPTIMIZATION: Ensure latest state is saved on tab close/refresh
+  // ⚡ BOLT OPTIMIZATION: Ensure latest state is saved on tab close/refresh or backgrounding
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+    const persist = () => {
+      try {
+        localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+      } catch (e) {
+        console.error("Failed to persist state on exit", e);
+      }
     };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        persist();
+      }
+    };
+
+    window.addEventListener("beforeunload", persist);
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("beforeunload", persist);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
