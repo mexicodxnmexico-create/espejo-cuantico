@@ -40,13 +40,15 @@ const LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reve
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
 const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
 
+// ⚡ BOLT OPTIMIZATION: Extract dynamic styles to static constants
+// This eliminates useMemo overhead and ensures referential stability.
+const LATEST_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
+const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
+
 // ⚡ BOLT OPTIMIZATION: Memoized HistoryItem component
 // Prevents re-rendering of existing history items when a new one is added.
 const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
-  const style = useMemo<CSSProperties>(() => ({
-    ...HISTORY_ITEM_STYLE_BASE,
-    color: isLatest ? "#000" : "#555"
-  }), [isLatest]);
+  const style = isLatest ? LATEST_HISTORY_ITEM_STYLE : NORMAL_HISTORY_ITEM_STYLE;
 
   return (
     <li style={style}>
