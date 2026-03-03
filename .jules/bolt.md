@@ -19,3 +19,7 @@
 ## 2025-06-21 - Render Loop O(n) Date Parsing
 **Learning:** Found that invoking `new Date().toLocaleDateString()` inside a `map` function during the render cycle of a list (e.g., in `ProgressDashboard.tsx`) causes significant O(n) overhead due to repetitive string and object instantiations.
 **Action:** Extract expensive formatting operations into a `useMemo` hook that pre-calculates the formatted values. Then map over the memoized array, reducing the cost to O(1) for re-renders where the source array hasn't changed.
+
+## 2025-07-15 - Eliminating useMemo in Hot Lists
+**Learning:** Found that using `useMemo` for inline styles inside a frequently rendered list item component (e.g., `HistoryItem` in `app/page.tsx` rendering up to 50 items) introduces unnecessary hook overhead (invocation, dependency tracking, closure allocation). This is especially true when the possible style objects are finite and stable based on boolean props (like `isLatest`).
+**Action:** Extract the static style objects to module-level constants (`LATEST_HISTORY_ITEM_STYLE` and `NORMAL_HISTORY_ITEM_STYLE`) and use a simple ternary operator to assign them. This completely eliminates hook overhead within the list item component, improving render performance in hot paths.
