@@ -20,7 +20,9 @@ const GRID_STYLE: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1
 const CARD_STYLE: CSSProperties = { padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" };
 const CARD_LABEL_STYLE: CSSProperties = { fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" };
 const OBSERVE_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "pointer", fontWeight: "bold" };
+const OBSERVE_BTN_STYLE_DISABLED: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "not-allowed", fontWeight: "bold", opacity: 0.5 };
 const REFLECT_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold" };
+const REFLECT_BTN_STYLE_DISABLED: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "not-allowed", fontWeight: "bold", opacity: 0.5 };
 const COLLAPSED_STYLE: CSSProperties = { padding: "2rem", backgroundColor: "#fff0f0", borderRadius: "12px", border: "1px solid #ff0000", textAlign: "center", marginBottom: "4rem", marginTop: "4rem" };
 const COLLAPSED_H3_STYLE: CSSProperties = { color: "#ff0000", margin: 0 };
 const COLLAPSED_P_STYLE: CSSProperties = { margin: "1rem 0" };
@@ -109,7 +111,8 @@ export default function Home() {
             <button
               onClick={() => dispatch("OBSERVE")}
               disabled={state.phase === "COLLAPSED"}
-              style={OBSERVE_BTN_STYLE}
+              style={state.phase === "COLLAPSED" ? OBSERVE_BTN_STYLE_DISABLED : OBSERVE_BTN_STYLE}
+              title={state.phase === "COLLAPSED" ? "El sistema está colapsado" : undefined}
             >
               Observar
             </button>
@@ -123,7 +126,8 @@ export default function Home() {
             <button
               onClick={() => dispatch("REFLECT")}
               disabled={state.phase === "COLLAPSED"}
-              style={REFLECT_BTN_STYLE}
+              style={state.phase === "COLLAPSED" ? REFLECT_BTN_STYLE_DISABLED : REFLECT_BTN_STYLE}
+              title={state.phase === "COLLAPSED" ? "El sistema está colapsado" : undefined}
             >
               Reflejar
             </button>
