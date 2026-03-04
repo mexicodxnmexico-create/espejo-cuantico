@@ -40,13 +40,18 @@ const LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reve
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
 const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
 
+// ⚡ BOLT OPTIMIZATION: Extract static styles to module-level constants
+const LATEST_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
+const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
+const COHERENCE_STABLE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: "#000" };
+const COHERENCE_CRITICAL_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: "#ff0000" };
+const ENTROPY_VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" };
+
 // ⚡ BOLT OPTIMIZATION: Memoized HistoryItem component
 // Prevents re-rendering of existing history items when a new one is added.
 const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
-  const style = useMemo<CSSProperties>(() => ({
-    ...HISTORY_ITEM_STYLE_BASE,
-    color: isLatest ? "#000" : "#555"
-  }), [isLatest]);
+  // ⚡ BOLT OPTIMIZATION: Use static constants for conditional styling to avoid useMemo overhead.
+  const style = isLatest ? LATEST_HISTORY_ITEM_STYLE : NORMAL_HISTORY_ITEM_STYLE;
 
   return (
     <li style={style}>
@@ -54,6 +59,7 @@ const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: stri
     </li>
   );
 });
+HistoryItem.displayName = "HistoryItem";
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
@@ -103,7 +109,7 @@ export default function Home() {
         <div style={GRID_STYLE}>
           <div style={CARD_STYLE}>
             <span style={CARD_LABEL_STYLE}>Coherencia</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
+            <div style={state.coherence > 30 ? COHERENCE_STABLE_STYLE : COHERENCE_CRITICAL_STYLE}>
               {state.coherence}%
             </div>
             <button
@@ -117,7 +123,7 @@ export default function Home() {
 
           <div style={CARD_STYLE}>
             <span style={CARD_LABEL_STYLE}>Entropía</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
+            <div style={ENTROPY_VALUE_STYLE}>
               {state.entropy}
             </div>
             <button
