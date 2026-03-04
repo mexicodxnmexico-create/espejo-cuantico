@@ -9,3 +9,7 @@
 ## 2024-05-24 - Text Contrast Standards
 **Learning:** Text color '#999' on light backgrounds (e.g., '#fafafa') fails WCAG AA contrast ratio (approx 2.9:1).
 **Action:** Use '#555' (approx 7.5:1) or darker for secondary text to ensure readability for all users.
+
+## 2024-05-25 - Disabled Button States
+**Learning:** To clearly communicate disabled states for accessibility and UX, buttons should visually reflect their state using CSS styles like `opacity: 0.5` and `cursor: not-allowed` instead of retaining normal pointers, and should provide context using a `title` attribute or tooltip explaining why the action is restricted.
+**Action:** Always verify disabled buttons have both visual distinction and contextual explanation for screen readers and pointer-users alike.
