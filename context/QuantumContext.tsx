@@ -16,24 +16,26 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const stateRef = useRef(state);
 
-  // Update ref to always have the latest state for the beforeunload listener
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
   // Persistence (Addressing "memory" requirement)
   useEffect(() => {
-    const saved = localStorage.getItem("quantum_state_v2");
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("quantum_state_v2");
+      if (saved) {
         setState(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse quantum state", e);
       }
+    } catch (e) {
+      console.error("Failed to parse quantum state", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Debounce localStorage saves to reduce main-thread blockage
+  // during rapid state updates. JSON.stringify and setItem are synchronous and expensive.
   useEffect(() => {
     if (loading) return;
 
@@ -47,7 +49,7 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
       }
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
   // ⚡ BOLT OPTIMIZATION: Ensure latest state is saved on tab close/refresh or backgrounding
@@ -78,6 +80,8 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => QuantumEngine.transition(prev, action));
   }, []);
 
+  // ⚡ BOLT OPTIMIZATION: Memoize context value to prevent unnecessary re-renders
+  // of components that only need dispatch or loading status.
   const value = useMemo(() => ({ state, dispatch, loading }), [state, dispatch, loading]);
 
   return (
