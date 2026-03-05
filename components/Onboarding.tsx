@@ -10,22 +10,12 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
     buttonRef.current?.focus();
   }, [step]);
 
-  const steps = [
-    {
-      title: "Bienvenido al Espejo Cuántico",
-      content: "Has entrado en un espacio de observación y reflejo. Aquí, cada acción altera la coherencia del sistema.",
-    },
-    {
-      title: "Observar es Modificar",
-      content: "En el mundo cuántico, el observador no es neutral. Al mirar el estado del sistema, introduces entropía.",
-    },
-    {
-      title: "Tu Propósito",
-      content: "Mantén la coherencia mientras exploras tus propios reflejos digitales. El colapso es el final, pero también un nuevo comienzo.",
-    },
-  ];
+  useEffect(() => {
+    // Shift focus to the heading when the step changes to announce new content
+    headingRef.current?.focus();
+  }, [step]);
 
-  if (step >= steps.length) return null;
+  if (step >= ONBOARDING_STEPS.length) return null;
 
   return (
     <div
@@ -60,7 +50,7 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
         <button
           ref={buttonRef}
           onClick={() => {
-            if (step === steps.length - 1) {
+            if (step === ONBOARDING_STEPS.length - 1) {
               onComplete();
             }
             setStep(s => s + 1);
@@ -75,7 +65,7 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
             fontWeight: "bold"
           }}
         >
-          {step === steps.length - 1 ? "Entrar al Espejo" : "Siguiente"}
+          {step === ONBOARDING_STEPS.length - 1 ? "Entrar al Espejo" : "Siguiente"}
         </button>
       </div>
     </div>
