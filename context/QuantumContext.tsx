@@ -39,42 +39,33 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
 
-    // ⚡ BOLT OPTIMIZATION: Debounce localStorage persistence to reduce main-thread load
-    // during frequent state updates.
-    const timer = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       try {
         localStorage.setItem("quantum_state_v2", JSON.stringify(state));
       } catch (e) {
-        console.error("Failed to persist state", e);
+        // Handle QuotaExceededError or other storage issues gracefully
+        console.error("Failed to save quantum state", e);
       }
     }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [state, loading]);
 
-  // ⚡ BOLT OPTIMIZATION: Ensure latest state is saved on tab close/refresh or backgrounding
+  // ⚡ BOLT: Ensure state is saved immediately when the tab is closed
   useEffect(() => {
-    const persist = () => {
-      try {
-        localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
-      } catch (e) {
-        console.error("Failed to persist state on exit", e);
+    const handleBeforeUnload = () => {
+      if (!loading && stateRef.current) {
+        try {
+          localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
+        } catch (e) {
+          console.error("Failed to save state on unload", e);
+        }
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        persist();
-      }
-    };
-
-    window.addEventListener("beforeunload", persist);
-    window.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      window.removeEventListener("beforeunload", persist);
-      window.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [loading]);
 
   const dispatch = useCallback((action: "OBSERVE" | "REFLECT" | "RESET") => {
     setState((prev) => QuantumEngine.transition(prev, action));
