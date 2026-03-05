@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { QuantumEngine, INITIAL_STATE } from './quantum-engine';
+import { QuantumEngine, INITIAL_STATE } from './quantum-engine.ts';
 
 test('History should be capped at 100 items', (t) => {
   let state = { ...INITIAL_STATE };
