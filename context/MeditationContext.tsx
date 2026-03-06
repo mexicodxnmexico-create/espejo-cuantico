@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useMemo } from 'react';
 
 const MeditationContext = createContext();
 
@@ -24,8 +24,12 @@ const reducer = (state, action) => {
 export const MeditationProvider = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
+    // ⚡ BOLT OPTIMIZATION: Memoize context provider value to prevent
+    // unnecessary re-renders of consumer components when the provider's parent re-renders.
+    const value = useMemo(() => ({ state, dispatch }), [state, dispatch]);
+
     return (
-        <MeditationContext.Provider value={{ state, dispatch }}>
+        <MeditationContext.Provider value={value}>
             {children}
         </MeditationContext.Provider>
     );
