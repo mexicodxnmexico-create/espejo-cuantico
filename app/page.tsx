@@ -4,8 +4,18 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Header } from "@/components/Header";
+
+// ⚡ BOLT OPTIMIZATION: Memoize individual history items to prevent re-rendering
+// existing items when a new event is added to the list.
+const HistoryItem = memo(function HistoryItem({ entry, isLatest, absoluteIndex }: { entry: string, isLatest: boolean, absoluteIndex: number }) {
+  return (
+    <div key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#999" }}>
+      {isLatest ? "> " : "  "} {entry}
+    </div>
+  );
+});
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
@@ -15,6 +25,12 @@ export default function Home() {
   // This keeps keys stable (O(1) updates) and avoids O(n) reverse() calls.
   const historyToRender = useMemo(() => state.history.slice(-50), [state.history]);
   const startIndex = Math.max(0, state.history.length - 50);
+
+  // ⚡ BOLT OPTIMIZATION: Memoize timestamp formatting to avoid redundant object
+  // creation and string operations on every state change.
+  const lastSyncTime = useMemo(() => {
+    return new Date(state.lastUpdate).toLocaleTimeString();
+  }, [state.lastUpdate]);
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
@@ -103,9 +119,12 @@ export default function Home() {
                 const isLatest = i === historyToRender.length - 1;
                 const absoluteIndex = startIndex + i;
                 return (
-                  <div key={absoluteIndex} style={{ marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem", color: isLatest ? "#000" : "#999" }}>
-                    {isLatest ? "> " : "  "} {entry}
-                  </div>
+                  <HistoryItem
+                    key={absoluteIndex}
+                    entry={entry}
+                    isLatest={isLatest}
+                    absoluteIndex={absoluteIndex}
+                  />
                 );
               })}
             </div>
@@ -114,7 +133,7 @@ export default function Home() {
       </main>
 
       <footer style={{ padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#999", fontSize: "0.8rem" }}>
-        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {new Date(state.lastUpdate).toLocaleTimeString()}
+        FASE ACTUAL: {state.phase} | ÚLTIMA SINCRONIZACIÓN: {lastSyncTime}
       </footer>
     </div>
   );
