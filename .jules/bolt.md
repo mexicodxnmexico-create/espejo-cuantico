@@ -12,10 +12,6 @@
 **Learning:** The `QuantumSystemState.history` array was growing indefinitely, causing increased memory usage and slower `localStorage` serialization (blocking the main thread) as the session duration increased.
 **Action:** Cap the history array to a fixed size (e.g., 100 items) within the state transition logic to ensure constant-time (O(1)) memory usage and serialization performance, regardless of session length.
 
-## 2025-05-22 - Debounced State Persistence
-**Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` during rapid user interactions (e.g., clicking 'Observe' multiple times) can block the main thread and cause UI stuttering.
-**Action:** Implement a debounced persistence mechanism (e.g., 500ms) to consolidate state updates and reduce expensive I/O operations. Also, memoize the context provider value to prevent redundant re-renders of components that don't depend on the state itself.
-
-## 2025-06-21 - Render Loop O(n) Date Parsing
-**Learning:** Found that invoking `new Date().toLocaleDateString()` inside a `map` function during the render cycle of a list (e.g., in `ProgressDashboard.tsx`) causes significant O(n) overhead due to repetitive string and object instantiations.
-**Action:** Extract expensive formatting operations into a `useMemo` hook that pre-calculates the formatted values. Then map over the memoized array, reducing the cost to O(1) for re-renders where the source array hasn't changed.
+## 2025-02-07 - Optimized State Persistence
+**Learning:** Frequent synchronous calls to `localStorage.setItem` and `JSON.stringify` on every state change can block the main thread and degrade UI responsiveness. Debouncing these calls significantly reduces overhead during rapid interactions. However, debouncing introduces a risk of data loss on tab closure, which must be mitigated by an immediate save in a `beforeunload` listener using a `useRef` for the latest state.
+**Action:** Implement debounced persistence and a `beforeunload` listener with `useRef` to balance performance and data integrity.
