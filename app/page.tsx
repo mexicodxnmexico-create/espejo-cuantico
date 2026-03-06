@@ -19,6 +19,10 @@ const STATUS_STYLE: CSSProperties = { fontSize: "1.25rem", color: "#666", maxWid
 const GRID_STYLE: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", marginBottom: "4rem" };
 const CARD_STYLE: CSSProperties = { padding: "2rem", borderRadius: "16px", border: "1px solid #eaeaea", textAlign: "center" };
 const CARD_LABEL_STYLE: CSSProperties = { fontSize: "0.8rem", textTransform: "uppercase", color: "#555", fontWeight: "bold" };
+const COHERENCE_VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" };
+const COHERENCE_STABLE_STYLE: CSSProperties = { ...COHERENCE_VALUE_STYLE, color: "#000" };
+const COHERENCE_CRITICAL_STYLE: CSSProperties = { ...COHERENCE_VALUE_STYLE, color: "#ff0000" };
+const ENTROPY_VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" };
 const OBSERVE_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "pointer", fontWeight: "bold" };
 const REFLECT_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold" };
 const COLLAPSED_STYLE: CSSProperties = { padding: "2rem", backgroundColor: "#fff0f0", borderRadius: "12px", border: "1px solid #ff0000", textAlign: "center", marginBottom: "4rem", marginTop: "4rem" };
@@ -40,20 +44,21 @@ const LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reve
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
 const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
 
+// ⚡ BOLT OPTIMIZATION: Static style constants for HistoryItem
+// Replaces useMemo hook to eliminate hook overhead and object creation during renders.
+const LATEST_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
+const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
+
 // ⚡ BOLT OPTIMIZATION: Memoized HistoryItem component
 // Prevents re-rendering of existing history items when a new one is added.
 const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
-  const style = useMemo<CSSProperties>(() => ({
-    ...HISTORY_ITEM_STYLE_BASE,
-    color: isLatest ? "#000" : "#555"
-  }), [isLatest]);
-
   return (
-    <li style={style}>
+    <li style={isLatest ? LATEST_HISTORY_ITEM_STYLE : NORMAL_HISTORY_ITEM_STYLE}>
       {isLatest ? "> " : "  "} {entry}
     </li>
   );
 });
+HistoryItem.displayName = "HistoryItem";
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
@@ -103,7 +108,7 @@ export default function Home() {
         <div style={GRID_STYLE}>
           <div style={CARD_STYLE}>
             <span style={CARD_LABEL_STYLE}>Coherencia</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0", color: state.coherence > 30 ? "#000" : "#ff0000" }}>
+            <div style={state.coherence > 30 ? COHERENCE_STABLE_STYLE : COHERENCE_CRITICAL_STYLE}>
               {state.coherence}%
             </div>
             <button
@@ -117,7 +122,7 @@ export default function Home() {
 
           <div style={CARD_STYLE}>
             <span style={CARD_LABEL_STYLE}>Entropía</span>
-            <div style={{ fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" }}>
+            <div style={ENTROPY_VALUE_STYLE}>
               {state.entropy}
             </div>
             <button
