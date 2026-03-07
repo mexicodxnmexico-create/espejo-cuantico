@@ -1,6 +1,11 @@
 import React, { useMemo, memo } from 'react';
+
 import './ProgressDashboard.css';
 import { calculateProgressPercentage } from '../lib/progress-utils';
+
+// ⚡ BOLT OPTIMIZATION: Module-level pre-instantiated formatter
+// Considerably faster than using useMemo for frequently changing dates or in loops
+const dateFormatter = new Intl.DateTimeFormat();
 
 
 interface MeditationStats {
@@ -36,7 +41,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
     const formattedAchievements = useMemo(() => {
         return achievements.map(a => ({
             ...a,
-            formattedDate: new Date(a.unlockedDate).toLocaleDateString()
+            formattedDate: dateFormatter.format(new Date(a.unlockedDate))
         }));
     }, [achievements]);
 
