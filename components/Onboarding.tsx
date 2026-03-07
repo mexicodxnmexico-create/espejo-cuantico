@@ -112,3 +112,5 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
     </div>
   );
 });
+
+Onboarding.displayName = "Onboarding";
