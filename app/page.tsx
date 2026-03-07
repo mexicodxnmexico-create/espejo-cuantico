@@ -49,6 +49,14 @@ const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderB
 const LATEST_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
 const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
 
+// ⚡ BOLT OPTIMIZATION: Pre-instantiate formatter to avoid expensive new Date().toLocaleTimeString()
+// in the render loop. Pass the numeric timestamp directly to format().
+const TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+});
+
 // ⚡ BOLT OPTIMIZATION: Memoized HistoryItem component
 // Prevents re-rendering of existing history items when a new one is added.
 const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
@@ -73,9 +81,9 @@ export default function Home() {
   // Prevents string allocation and calculation on every render.
   const statusMessage = useMemo(() => QuantumEngine.getStatusMessage(state), [state]);
 
-  // ⚡ BOLT OPTIMIZATION: Memoize date string
-  // toLocaleTimeString is expensive to call in render loop if not needed
-  const lastUpdateString = useMemo(() => new Date(state.lastUpdate).toLocaleTimeString(), [state.lastUpdate]);
+  // ⚡ BOLT OPTIMIZATION: Memoize date string using pre-instantiated formatter.
+  // format() with a numeric timestamp is much faster than new Date().toLocaleTimeString().
+  const lastUpdateString = useMemo(() => TIME_FORMATTER.format(state.lastUpdate), [state.lastUpdate]);
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
