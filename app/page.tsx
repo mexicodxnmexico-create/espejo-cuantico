@@ -7,6 +7,17 @@ import { PersonalInsight } from "@/components/PersonalInsight";
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Header } from "@/components/Header";
 import { CSSProperties } from "react";
+import dynamic from "next/dynamic";
+
+// ⚡ BOLT OPTIMIZATION: Lazy-load the heavy 3D component
+// This keeps the initial bundle light and speeds up the first paint.
+const QuantumCanvas = dynamic(
+  () => import("@/components/QuantumCanvas").then((mod) => mod.QuantumCanvas),
+  {
+    ssr: false,
+    loading: () => <div style={{ height: "24rem", backgroundColor: "#000", borderRadius: "0.75rem", marginBottom: "2rem", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>Cargando núcleo visual...</div>
+  }
+);
 
 // ⚡ BOLT OPTIMIZATION: Extract static styles to module-level constants
 // This prevents object re-creation on every render, reducing garbage collection pressure.
@@ -98,6 +109,8 @@ export default function Home() {
       <Header />
 
       <main style={MAIN_STYLE}>
+        <QuantumCanvas />
+
         <section style={HEADER_SECTION_STYLE}>
           <h1 style={H1_STYLE}>Espejo Cuántico</h1>
           <p role="status" aria-live="polite" style={STATUS_STYLE}>
