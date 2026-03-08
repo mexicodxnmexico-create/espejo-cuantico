@@ -53,12 +53,31 @@ const LOG_CONTAINER_STYLE: CSSProperties = {
 };
 const LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reverse", listStyle: "none", padding: 0, margin: 0 };
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
-const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
+
+// ⚡ BOLT OPTIMIZATION: Module-level pre-instantiated formatter
+// Considerably faster than using useMemo for frequently changing dates or in loops
+const TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+});
 
 // ⚡ BOLT OPTIMIZATION: Static style constants for HistoryItem
 // Replaces useMemo hook to eliminate hook overhead and object creation during renders.
-const LATEST_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
-const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
+// Avoids object spreads to minimize redundant object creation during module evaluation.
+const LATEST_HISTORY_ITEM_STYLE: CSSProperties = {
+  marginBottom: "0.5rem",
+  borderBottom: "1px solid #eee",
+  paddingBottom: "0.5rem",
+  color: "#000"
+};
+
+const NORMAL_HISTORY_ITEM_STYLE: CSSProperties = {
+  marginBottom: "0.5rem",
+  borderBottom: "1px solid #eee",
+  paddingBottom: "0.5rem",
+  color: "#555"
+};
 
 // ⚡ BOLT OPTIMIZATION: Memoized HistoryItem component
 // Prevents re-rendering of existing history items when a new one is added.
@@ -84,9 +103,10 @@ export default function Home() {
   // Prevents string allocation and calculation on every render.
   const statusMessage = useMemo(() => QuantumEngine.getStatusMessage(state), [state]);
 
-  // ⚡ BOLT OPTIMIZATION: Memoize date string
-  // toLocaleTimeString is expensive to call in render loop if not needed
-  const lastUpdateString = useMemo(() => new Date(state.lastUpdate).toLocaleTimeString(), [state.lastUpdate]);
+  // ⚡ BOLT OPTIMIZATION: Memoize date string using pre-instantiated formatter
+  // toLocaleTimeString is expensive to call in render loop if not needed.
+  // Using TIME_FORMATTER.format is significantly faster.
+  const lastUpdateString = useMemo(() => TIME_FORMATTER.format(state.lastUpdate), [state.lastUpdate]);
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
