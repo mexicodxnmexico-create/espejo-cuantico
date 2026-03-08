@@ -23,3 +23,7 @@
 ## 2025-03-05 - Provider Re-renders
 **Learning:** In React, if a Context Provider's value prop is an object literal (e.g., `value={{ state, dispatch }}`), it will create a new object reference on every render of the Provider's parent component. This forces all components consuming that context to re-render, even if `state` and `dispatch` haven't changed.
 **Action:** Always memoize the value passed to a Context Provider using `useMemo` (e.g., `const value = useMemo(() => ({ state, dispatch }), [state, dispatch]);`) to prevent unnecessary re-renders of consumer components.
+
+## 2025-06-22 - Intl.DateTimeFormat Instantiation Overhead
+**Learning:** Repeated calls to `new Date().toLocaleTimeString()` involve creating `Intl.DateTimeFormat` objects under the hood, which is an expensive operation in JavaScript, even when wrapped in a `useMemo` hook that updates on state changes.
+**Action:** Extract the formatting operation into a module-level, pre-instantiated `Intl.DateTimeFormat` object. Formatting dates using this single instance (e.g., `formatter.format(date)`) significantly reduces object creation and garbage collection overhead compared to creating new instances repeatedly.
