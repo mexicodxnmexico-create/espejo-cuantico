@@ -23,3 +23,7 @@
 ## 2025-03-05 - Provider Re-renders
 **Learning:** In React, if a Context Provider's value prop is an object literal (e.g., `value={{ state, dispatch }}`), it will create a new object reference on every render of the Provider's parent component. This forces all components consuming that context to re-render, even if `state` and `dispatch` haven't changed.
 **Action:** Always memoize the value passed to a Context Provider using `useMemo` (e.g., `const value = useMemo(() => ({ state, dispatch }), [state, dispatch]);`) to prevent unnecessary re-renders of consumer components.
+
+## 2025-03-09 - [Performance] Optimize date instantiation in MeditationEngine
+**Learning:** Instantiating `new Date().getTime()` inside a `.reduce` loop iterations over multiple items is highly inefficient. Extracting the calculation to `Date.now()` outside the loop and reusing it prevents unnecessary object allocations per iteration.
+**Action:** Modified `lib/meditation-engine.ts` to calculate `Date.now()` outside the `.reduce` loop mapping completed sessions and reusing the value inside, realizing a significant speedup in `calculateProgress` iterations.
