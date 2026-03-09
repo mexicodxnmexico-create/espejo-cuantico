@@ -1,13 +1,22 @@
 // Meditation Engine Logic
 
-class MeditationEngine {
+export interface Session {
+    duration: number;
+    startTime: Date;
+    endTime: Date | null;
+}
+
+export class MeditationEngine {
+    sessions: Session[];
+    progress: number;
+
     constructor() {
         this.sessions = [];
         this.progress = 0;
     }
 
-    startSession(duration) {
-        const session = {
+    startSession(duration: number): Session {
+        const session: Session = {
             duration: duration,
             startTime: new Date(),
             endTime: null,
@@ -16,13 +25,19 @@ class MeditationEngine {
         return session;
     }
 
-    endSession(session) {
+    endSession(session: Session) {
         session.endTime = new Date();
         this.calculateProgress();
     }
 
     calculateProgress() {
         const totalDuration = this.sessions.reduce((acc, session) => acc + session.duration, 0);
+
+        if (totalDuration === 0) {
+            this.progress = 0;
+            return;
+        }
+
         const completedDuration = this.sessions.reduce((acc, session) => {
             const endTime = session.endTime ? session.endTime.getTime() : new Date().getTime();
             return acc + (endTime - session.startTime.getTime()) / 1000;
@@ -34,11 +49,3 @@ class MeditationEngine {
         return this.progress;
     }
 }
-
-// Example usage
-const engine = new MeditationEngine();
-const session1 = engine.startSession(600); // 10 minutes
-setTimeout(() => {
-    engine.endSession(session1);
-    console.log(`Session progress: ${engine.getProgress()}%`);
-}, 10000); // Ends session after 10 seconds
