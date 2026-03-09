@@ -34,8 +34,10 @@ const COHERENCE_VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bo
 const COHERENCE_STABLE_STYLE: CSSProperties = { ...COHERENCE_VALUE_STYLE, color: "#000" };
 const COHERENCE_CRITICAL_STYLE: CSSProperties = { ...COHERENCE_VALUE_STYLE, color: "#ff0000" };
 const ENTROPY_VALUE_STYLE: CSSProperties = { fontSize: "3rem", fontWeight: "bold", margin: "0.5rem 0" };
-const OBSERVE_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "pointer", fontWeight: "bold" };
-const REFLECT_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold" };
+const OBSERVE_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "8px", border: "1px solid #000", background: "none", cursor: "pointer", fontWeight: "bold", transition: "all 0.2s ease" };
+const OBSERVE_BTN_DISABLED_STYLE: CSSProperties = { ...OBSERVE_BTN_STYLE, opacity: 0.5, cursor: "not-allowed" };
+const REFLECT_BTN_STYLE: CSSProperties = { width: "100%", padding: "0.75rem", borderRadius: "12px", backgroundColor: "#000", color: "#fff", border: "none", cursor: "pointer", fontWeight: "bold", transition: "all 0.2s ease" };
+const REFLECT_BTN_DISABLED_STYLE: CSSProperties = { ...REFLECT_BTN_STYLE, opacity: 0.5, cursor: "not-allowed" };
 const COLLAPSED_STYLE: CSSProperties = { padding: "2rem", backgroundColor: "#fff0f0", borderRadius: "12px", border: "1px solid #ff0000", textAlign: "center", marginBottom: "4rem", marginTop: "4rem" };
 const COLLAPSED_H3_STYLE: CSSProperties = { color: "#ff0000", margin: 0 };
 const COLLAPSED_P_STYLE: CSSProperties = { margin: "1rem 0" };
@@ -127,7 +129,8 @@ export default function Home() {
             <button
               onClick={() => dispatch("OBSERVE")}
               disabled={state.phase === "COLLAPSED"}
-              style={OBSERVE_BTN_STYLE}
+              style={state.phase === "COLLAPSED" ? OBSERVE_BTN_DISABLED_STYLE : OBSERVE_BTN_STYLE}
+              title={state.phase === "COLLAPSED" ? "Acción deshabilitada: El sistema ha colapsado" : undefined}
             >
               Observar
             </button>
@@ -141,7 +144,8 @@ export default function Home() {
             <button
               onClick={() => dispatch("REFLECT")}
               disabled={state.phase === "COLLAPSED"}
-              style={REFLECT_BTN_STYLE}
+              style={state.phase === "COLLAPSED" ? REFLECT_BTN_DISABLED_STYLE : REFLECT_BTN_STYLE}
+              title={state.phase === "COLLAPSED" ? "Acción deshabilitada: El sistema ha colapsado" : undefined}
             >
               Reflejar
             </button>
@@ -151,7 +155,7 @@ export default function Home() {
         <PersonalInsight reflectionCount={state.reflectionCount} />
 
         {state.phase === "COLLAPSED" && (
-          <div style={COLLAPSED_STYLE}>
+          <div style={COLLAPSED_STYLE} role="alert" aria-live="assertive">
             <h3 style={COLLAPSED_H3_STYLE}>SISTEMA COLAPSADO</h3>
             <p style={COLLAPSED_P_STYLE}>La incoherencia ha alcanzado el punto crítico.</p>
             <button onClick={() => dispatch("RESET")} style={RESET_BTN_STYLE}>
