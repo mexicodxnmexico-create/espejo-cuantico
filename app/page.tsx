@@ -71,6 +71,10 @@ const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: stri
 });
 HistoryItem.displayName = "HistoryItem";
 
+// ⚡ BOLT OPTIMIZATION: Module-level pre-instantiated formatter
+// Faster than repeated toLocaleTimeString calls during render loops.
+const timeFormatter = new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' });
+
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -84,9 +88,9 @@ export default function Home() {
   // Prevents string allocation and calculation on every render.
   const statusMessage = useMemo(() => QuantumEngine.getStatusMessage(state), [state]);
 
-  // ⚡ BOLT OPTIMIZATION: Memoize date string
-  // toLocaleTimeString is expensive to call in render loop if not needed
-  const lastUpdateString = useMemo(() => new Date(state.lastUpdate).toLocaleTimeString(), [state.lastUpdate]);
+  // ⚡ BOLT OPTIMIZATION: Memoize date string using pre-instantiated formatter
+  // Eliminates repeated object creation overhead.
+  const lastUpdateString = useMemo(() => timeFormatter.format(new Date(state.lastUpdate)), [state.lastUpdate]);
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
