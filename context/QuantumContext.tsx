@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
+import { logger } from "@/lib/logger";
+
 
 interface QuantumContextType {
   state: QuantumSystemState;
@@ -28,7 +30,7 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
         setState(JSON.parse(saved));
       }
     } catch (e) {
-      console.error("Failed to parse quantum state", e);
+      logger.error("Failed to parse quantum state", e);
     } finally {
       setLoading(false);
     }
@@ -44,7 +46,7 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("quantum_state_v2", JSON.stringify(state));
       } catch (e) {
         // Handle QuotaExceededError or other storage issues gracefully
-        console.error("Failed to save quantum state", e);
+        logger.error("Failed to save quantum state", e);
       }
     }, 500);
 
@@ -58,7 +60,7 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
         try {
           localStorage.setItem("quantum_state_v2", JSON.stringify(stateRef.current));
         } catch (e) {
-          console.error("Failed to save state on unload", e);
+          logger.error("Failed to save state on unload", e);
         }
       }
     };
