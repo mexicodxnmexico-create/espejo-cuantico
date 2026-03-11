@@ -4,7 +4,7 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Header } from "@/components/Header";
 import { CSSProperties } from "react";
 import dynamic from "next/dynamic";
@@ -77,6 +77,14 @@ HistoryItem.displayName = "HistoryItem";
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const restoreBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (state.phase === "COLLAPSED") {
+      restoreBtnRef.current?.focus();
+    }
+  }, [state.phase]);
+
 
   // ⚡ BOLT OPTIMIZATION: Limit rendering to last 50 items and use CSS for reversal.
   // This keeps keys stable (O(1) updates) and avoids O(n) reverse() calls.
@@ -158,10 +166,10 @@ export default function Home() {
         <PersonalInsight reflectionCount={state.reflectionCount} />
 
         {state.phase === "COLLAPSED" && (
-          <div style={COLLAPSED_STYLE}>
+          <div style={COLLAPSED_STYLE} role="alert">
             <h3 style={COLLAPSED_H3_STYLE}>SISTEMA COLAPSADO</h3>
             <p style={COLLAPSED_P_STYLE}>La incoherencia ha alcanzado el punto crítico.</p>
-            <button onClick={() => dispatch("RESET")} style={RESET_BTN_STYLE}>
+            <button ref={restoreBtnRef} onClick={() => dispatch("RESET")} style={RESET_BTN_STYLE}>
               Restaurar Espejo
             </button>
           </div>
