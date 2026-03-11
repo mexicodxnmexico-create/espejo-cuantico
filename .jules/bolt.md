@@ -23,3 +23,7 @@
 ## 2025-03-05 - Provider Re-renders
 **Learning:** In React, if a Context Provider's value prop is an object literal (e.g., `value={{ state, dispatch }}`), it will create a new object reference on every render of the Provider's parent component. This forces all components consuming that context to re-render, even if `state` and `dispatch` haven't changed.
 **Action:** Always memoize the value passed to a Context Provider using `useMemo` (e.g., `const value = useMemo(() => ({ state, dispatch }), [state, dispatch]);`) to prevent unnecessary re-renders of consumer components.
+
+## 2025-07-20 - O(n) Operations in Render Path and Array Reductions
+**Learning:** Found that `calculateProgress` in `MeditationEngine` was doing two O(n) `.reduce()` passes over an array, and calling `new Date().getTime()` inside the inner loop, creating significant GC overhead and doubling computational time unnecessarily.
+**Action:** Combine multiple array iterations into a single O(n) loop where possible, and lift expensive object instantiations like `new Date()` out of the loop using `Date.now()` cached as a constant outside the loop to minimize performance bottlenecks.

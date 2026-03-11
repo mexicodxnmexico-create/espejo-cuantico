@@ -30,18 +30,26 @@ export class MeditationEngine {
         this.calculateProgress();
     }
 
+    // ⚡ BOLT OPTIMIZATION: Combine loops and remove new Date() inside the loop.
+    // Replaced two separate O(n) reduce loops with a single O(n) loop to calculate both durations.
+    // Replaced new Date().getTime() with Date.now() cached outside the loop to avoid object creation.
     calculateProgress() {
-        const totalDuration = this.sessions.reduce((acc, session) => acc + session.duration, 0);
+        let totalDuration = 0;
+        let completedDuration = 0;
+        const now = Date.now();
+
+        for (let i = 0; i < this.sessions.length; i++) {
+            const session = this.sessions[i];
+            totalDuration += session.duration;
+            const endTime = session.endTime ? session.endTime.getTime() : now;
+            completedDuration += (endTime - session.startTime.getTime()) / 1000;
+        }
 
         if (totalDuration === 0) {
             this.progress = 0;
             return;
         }
 
-        const completedDuration = this.sessions.reduce((acc, session) => {
-            const endTime = session.endTime ? session.endTime.getTime() : new Date().getTime();
-            return acc + (endTime - session.startTime.getTime()) / 1000;
-        }, 0);
         this.progress = (completedDuration / totalDuration) * 100;
     }
 
