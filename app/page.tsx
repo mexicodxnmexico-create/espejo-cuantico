@@ -4,7 +4,7 @@ import { useQuantum } from "@/context/QuantumContext";
 import { QuantumEngine } from "@/lib/quantum-engine";
 import { Onboarding } from "@/components/Onboarding";
 import { PersonalInsight } from "@/components/PersonalInsight";
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Header } from "@/components/Header";
 import { CSSProperties } from "react";
 import dynamic from "next/dynamic";
@@ -76,6 +76,7 @@ HistoryItem.displayName = "HistoryItem";
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
+  const resetBtnRef = useRef<HTMLButtonElement>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // ⚡ BOLT OPTIMIZATION: Limit rendering to last 50 items and use CSS for reversal.
@@ -90,6 +91,12 @@ export default function Home() {
   // ⚡ BOLT OPTIMIZATION: Memoize date string
   // toLocaleTimeString is expensive to call in render loop if not needed
   const lastUpdateString = useMemo(() => new Date(state.lastUpdate).toLocaleTimeString(), [state.lastUpdate]);
+
+  useEffect(() => {
+    if (state.phase === "COLLAPSED") {
+      resetBtnRef.current?.focus();
+    }
+  }, [state.phase]);
 
   useEffect(() => {
     const hasSeen = localStorage.getItem("quantum_onboarded");
@@ -158,10 +165,14 @@ export default function Home() {
         <PersonalInsight reflectionCount={state.reflectionCount} />
 
         {state.phase === "COLLAPSED" && (
-          <div style={COLLAPSED_STYLE}>
+          <div style={COLLAPSED_STYLE} role="alert" aria-live="assertive">
             <h3 style={COLLAPSED_H3_STYLE}>SISTEMA COLAPSADO</h3>
             <p style={COLLAPSED_P_STYLE}>La incoherencia ha alcanzado el punto crítico.</p>
-            <button onClick={() => dispatch("RESET")} style={RESET_BTN_STYLE}>
+            <button
+              ref={resetBtnRef}
+              onClick={() => dispatch("RESET")}
+              style={RESET_BTN_STYLE}
+            >
               Restaurar Espejo
             </button>
           </div>
