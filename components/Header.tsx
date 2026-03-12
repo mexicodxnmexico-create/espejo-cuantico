@@ -2,11 +2,17 @@
 
 import { useEffect, useState, memo } from "react";
 
+export const sanitizeUserId = (id: string | null): string => {
+  if (!id) return "Identificando...";
+  const sanitized = id.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+  return sanitized || "Identificando...";
+};
+
 export const Header = memo(function Header() {
   const [uid, setUid] = useState("");
 
   useEffect(() => {
-    setUid(localStorage.getItem("quantum_user_id") || "Identificando...");
+    setUid(sanitizeUserId(localStorage.getItem("quantum_user_id")));
   }, []);
 
   return (
