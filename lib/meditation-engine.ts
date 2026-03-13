@@ -31,17 +31,24 @@ export class MeditationEngine {
     }
 
     calculateProgress() {
-        const totalDuration = this.sessions.reduce((acc, session) => acc + session.duration, 0);
+        // ⚡ BOLT OPTIMIZATION: Combine loops to reduce algorithmic complexity from O(2n) to O(n)
+        // and use Date.now() instead of repeatedly instantiating new Date() objects.
+        let totalDuration = 0;
+        let completedDuration = 0;
+        const now = Date.now();
+
+        for (let i = 0; i < this.sessions.length; i++) {
+            const session = this.sessions[i];
+            totalDuration += session.duration;
+            const endTime = session.endTime ? session.endTime.getTime() : now;
+            completedDuration += (endTime - session.startTime.getTime()) / 1000;
+        }
 
         if (totalDuration === 0) {
             this.progress = 0;
             return;
         }
 
-        const completedDuration = this.sessions.reduce((acc, session) => {
-            const endTime = session.endTime ? session.endTime.getTime() : new Date().getTime();
-            return acc + (endTime - session.startTime.getTime()) / 1000;
-        }, 0);
         this.progress = (completedDuration / totalDuration) * 100;
     }
 
