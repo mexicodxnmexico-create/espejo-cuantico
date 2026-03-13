@@ -20,9 +20,17 @@ test('QuantumContext test suite', async (t) => {
 
   t.beforeEach(() => {
     loggedError = null;
-    console.error = (msg: string, e: any) => {
-      if (typeof msg === 'string' && (msg.includes('Failed to parse quantum state') || msg.includes('Failed to save quantum state'))) {
-        loggedError = e;
+    console.error = (msg: string) => {
+      try {
+        const parsed = JSON.parse(msg);
+        if (parsed.level === 'error' &&
+            (parsed.message.includes('Failed to parse quantum state') ||
+             parsed.message.includes('Failed to save quantum state'))) {
+          // Reconstruct error object for assertions
+          loggedError = new Error(parsed.metadata?.message || 'Unknown error');
+        }
+      } catch (e) {
+        // Fallback or ignore if not JSON
       }
     };
 
