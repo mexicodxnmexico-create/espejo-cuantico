@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
+
 import './ProgressDashboard.css';
+import { calculateProgressPercentage } from '../lib/progress-utils';
+
+// ⚡ BOLT OPTIMIZATION: Module-level pre-instantiated formatter
+// Considerably faster than using useMemo for frequently changing dates or in loops
+const dateFormatter = new Intl.DateTimeFormat();
+
 
 interface MeditationStats {
     totalMeditations: number;
@@ -22,12 +29,21 @@ interface ProgressDashboardProps {
     meditationStats: MeditationStats;
 }
 
-const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
+const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
     streak,
     achievements,
     meditationStats,
 }) => {
-    const progressPercentage = (meditationStats.completedThisWeek / meditationStats.weeklyTarget) * 100;
+    const progressPercentage = calculateProgressPercentage(meditationStats.completedThisWeek, meditationStats.weeklyTarget);
+
+    // ⚡ BOLT OPTIMIZATION: Memoize formatted dates to prevent O(n) Date parsing
+    // and localization calls on every render.
+    const formattedAchievements = useMemo(() => {
+        return achievements.map(a => ({
+            ...a,
+            formattedDate: dateFormatter.format(new Date(a.unlockedDate))
+        }));
+    }, [achievements]);
 
     return (
         <div className="dashboard-container">
@@ -91,14 +107,14 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </div>
             <div className="achievements-section card-animate">
                 <h2 className="text-2xl font-bold text-white mb-6">🏅 Achievements Unlocked</h2>
-                {achievements.length > 0 ? (
+                {formattedAchievements.length > 0 ? (
                     <div className="achievements-grid">
-                        {achievements.map((achievement, index) => (
+                        {formattedAchievements.map((achievement, index) => (
                             <div key={achievement.id} className="achievement-badge" style={{ animationDelay: `${index * 0.1}s` }}>
                                 <div className="achievement-icon">{achievement.icon}</div>
                                 <p className="achievement-name">{achievement.name}</p>
                                 <p className="achievement-date text-xs text-gray-400">
-                                    {new Date(achievement.unlockedDate).toLocaleDateString()}
+                                    {achievement.formattedDate}
                                 </p>
                             </div>
                         ))}
@@ -113,6 +129,8 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </div>
         </div>
     );
-};
+});
+
+ProgressDashboard.displayName = 'ProgressDashboard';
 
 export default ProgressDashboard;
