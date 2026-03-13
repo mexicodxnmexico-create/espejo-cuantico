@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { MeditationEngine, type Session } from '../lib/meditation-engine.ts';
+import { MeditationEngine } from '../lib/meditation-engine.ts';
 
 test('MeditationEngine', async (t) => {
     await t.test('initializes with default values', () => {
