@@ -4,6 +4,39 @@ import { QuantumEngine, INITIAL_STATE } from '../lib/quantum-engine.ts';
 import type { QuantumSystemState } from '../lib/quantum-engine.ts';
 
 test('QuantumEngine transitions', async (t) => {
+
+    await t.test('OBSERVE - reduces coherence and increases entropy', () => {
+        const initialState = {
+            ...INITIAL_STATE,
+            coherence: 50,
+            entropy: 10,
+            phase: 'IDLE',
+        };
+
+        const newState = QuantumEngine.transition(initialState, 'OBSERVE');
+
+        assert.strictEqual(newState.phase, 'OBSERVING');
+        assert.strictEqual(newState.coherence, 49); // 50 - 1
+        assert.strictEqual(newState.entropy, 12); // 10 + 2
+        assert.strictEqual(newState.history[newState.history.length - 1], 'Observación registrada. La entropía aumenta.');
+    });
+
+    await t.test('OBSERVE - coherence does not drop below 0', () => {
+        const initialState = {
+            ...INITIAL_STATE,
+            coherence: 0,
+            entropy: 10,
+            phase: 'IDLE',
+        };
+
+        const newState = QuantumEngine.transition(initialState, 'OBSERVE');
+
+        assert.strictEqual(newState.phase, 'COLLAPSED');
+        assert.strictEqual(newState.coherence, 0); // Math.max(0, 0 - 1)
+        assert.strictEqual(newState.entropy, 12); // 10 + 2
+        assert.strictEqual(newState.history[newState.history.length - 1], 'Observación registrada. La entropía aumenta.');
+    });
+
     await t.test('REFLECT - high coherence (> 20)', () => {
         const initialState: QuantumSystemState = {
             ...INITIAL_STATE,
