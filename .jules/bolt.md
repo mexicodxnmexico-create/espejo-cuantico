@@ -23,3 +23,7 @@
 ## 2025-03-05 - Provider Re-renders
 **Learning:** In React, if a Context Provider's value prop is an object literal (e.g., `value={{ state, dispatch }}`), it will create a new object reference on every render of the Provider's parent component. This forces all components consuming that context to re-render, even if `state` and `dispatch` haven't changed.
 **Action:** Always memoize the value passed to a Context Provider using `useMemo` (e.g., `const value = useMemo(() => ({ state, dispatch }), [state, dispatch]);`) to prevent unnecessary re-renders of consumer components.
+
+## 2025-06-25 - Redundant Map Traversals
+**Learning:** Performing multiple `.reduce` or `.map` iterations sequentially (e.g., calculating both total duration and completed duration from the same sessions array) causes O(2n) complexity. Calling `new Date().getTime()` inside a map/reduce causes redundant object allocation overhead.
+**Action:** Combine the calculations into a single `for` loop, bringing time complexity down to O(n). Cache `Date.now()` outside the loop if appropriate or replace `new Date().getTime()` directly with `Date.now()` to avoid garbage collection pressure from intermediate object allocations.
