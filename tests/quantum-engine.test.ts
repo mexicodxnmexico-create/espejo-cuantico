@@ -95,3 +95,53 @@ test('QuantumEngine transitions', async (t) => {
         assert.strictEqual(newState.history[0], 'Sistema reiniciado manualmente.');
     });
 });
+
+test('QuantumEngine getStatusMessage', async (t) => {
+    await t.test('returns correct message for COLLAPSED phase', () => {
+        const state: QuantumSystemState = { ...INITIAL_STATE, phase: 'COLLAPSED' };
+        assert.strictEqual(
+            QuantumEngine.getStatusMessage(state),
+            'El espejo se ha quebrado. Reinicia para restaurar la armonía.'
+        );
+    });
+
+    await t.test('returns correct message for ENTANGLED phase', () => {
+        const state: QuantumSystemState = { ...INITIAL_STATE, phase: 'ENTANGLED' };
+        assert.strictEqual(
+            QuantumEngine.getStatusMessage(state),
+            'Estás entrelazado con el sistema. Tus acciones tienen consecuencias globales.'
+        );
+    });
+
+    await t.test('returns correct message for low coherence (< 50)', () => {
+        const state: QuantumSystemState = { ...INITIAL_STATE, phase: 'OBSERVING', coherence: 49 };
+        assert.strictEqual(
+            QuantumEngine.getStatusMessage(state),
+            'La señal es débil. El ruido está ganando.'
+        );
+    });
+
+    await t.test('returns correct message for stable system (high coherence, not collapsed/entangled)', () => {
+        const state: QuantumSystemState = { ...INITIAL_STATE, phase: 'IDLE', coherence: 100 };
+        assert.strictEqual(
+            QuantumEngine.getStatusMessage(state),
+            'Sistema estable. El espejo aguarda tu intención.'
+        );
+    });
+
+    await t.test('prioritizes COLLAPSED over low coherence', () => {
+        const state: QuantumSystemState = { ...INITIAL_STATE, phase: 'COLLAPSED', coherence: 10 };
+        assert.strictEqual(
+            QuantumEngine.getStatusMessage(state),
+            'El espejo se ha quebrado. Reinicia para restaurar la armonía.'
+        );
+    });
+
+    await t.test('prioritizes ENTANGLED over low coherence', () => {
+        const state: QuantumSystemState = { ...INITIAL_STATE, phase: 'ENTANGLED', coherence: 10 };
+        assert.strictEqual(
+            QuantumEngine.getStatusMessage(state),
+            'Estás entrelazado con el sistema. Tus acciones tienen consecuencias globales.'
+        );
+    });
+});
