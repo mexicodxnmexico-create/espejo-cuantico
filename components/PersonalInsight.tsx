@@ -1,29 +1,6 @@
 "use client";
 
-import { memo, CSSProperties } from "react";
-
-// ⚡ BOLT OPTIMIZATION: Extract static styles to module-level constants
-// This prevents object re-creation on every render, reducing garbage collection pressure.
-const INSIGHT_CONTAINER_STYLE: CSSProperties = {
-  marginTop: "3rem",
-  padding: "1.5rem",
-  borderRadius: "12px",
-  background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-  textAlign: "center"
-};
-
-const INSIGHT_LABEL_STYLE: CSSProperties = {
-  margin: "0 0 0.5rem 0",
-  textTransform: "uppercase",
-  fontSize: "0.75rem",
-  color: "#666"
-};
-
-const INSIGHT_MESSAGE_STYLE: CSSProperties = {
-  margin: 0,
-  fontWeight: "500",
-  color: "#333"
-};
+import { memo } from "react";
 
 export const PersonalInsight = memo(function PersonalInsight({ reflectionCount }: { reflectionCount: number }) {
   let message = "";
@@ -33,11 +10,9 @@ export const PersonalInsight = memo(function PersonalInsight({ reflectionCount }
   else message = "Eres un maestro de la realidad reflejada. El espejo y tú sois uno.";
 
   return (
-    <div style={INSIGHT_CONTAINER_STYLE}>
-      <h4 style={INSIGHT_LABEL_STYLE}>Insight Personal</h4>
-      <p style={INSIGHT_MESSAGE_STYLE}>{message}</p>
+    <div style={{ marginTop: "3rem", padding: "1.5rem", borderRadius: "12px", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", textAlign: "center" }}>
+      <h4 style={{ margin: "0 0 0.5rem 0", textTransform: "uppercase", fontSize: "0.75rem", color: "#666" }}>Insight Personal</h4>
+      <p style={{ margin: 0, fontWeight: "500", color: "#333" }}>{message}</p>
     </div>
   );
 });
-
-PersonalInsight.displayName = "PersonalInsight";

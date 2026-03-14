@@ -1,7 +1,11 @@
-## 2024-05-23 - Accessibility in Custom Modals
-**Learning:** The application uses custom `div` overlays for modals (like `Onboarding`) without native `dialog` elements or ARIA attributes. This completely hides context from screen readers and traps keyboard focus in the underlying page.
-**Action:** When encountering custom overlays, immediately check for `role="dialog"`, `aria-modal="true"`, and focus management. Simple `useEffect` focus on the primary action is a high-value, low-effort fix for these patterns.
+## 2024-05-23 - Custom Modal Accessibility
+**Learning:** Custom modals (e.g., in 'components/Onboarding.tsx') require explicit 'role="dialog"', 'aria-modal="true"', and focus management using 'useEffect' and 'useRef' to ensure accessibility, as they are implemented with 'div' overlays.
+**Action:** Always wrap custom modal content in semantic containers with ARIA attributes and manage focus programmatically on mount and step changes.
 
-## 2024-05-23 - Accessibility in Inline Styled Disabled States
-**Learning:** Native CSS stylesheets usually apply visual changes automatically when an element receives the `disabled` attribute. However, when using inline styles (or custom components relying solely on inline styles), setting `disabled` does not change the appearance. This creates a confusing UX where interactive elements appear active but are unclickable. Furthermore, screen reader context is enhanced by explicit `aria-disabled` and `title` attributes.
-**Action:** When applying custom or inline styles to interactive elements like buttons, always explicitly include conditional visual styles (e.g., `opacity`, `cursor: "not-allowed"`) alongside the standard `disabled` property, and pair it with accessibility attributes (`aria-disabled`, `title`) to ensure states are clearly conveyed visually and semantically.
+## 2024-05-24 - Scrollable Region Accessibility
+**Learning:** Scrollable regions (like history logs) require 'tabIndex={0}' and an accessible name to be navigable via keyboard.
+**Action:** Always add 'tabIndex={0}', 'role="region"' (or semantic role like 'log'), and 'aria-label' to custom scrollable containers.
+
+## 2024-05-24 - Text Contrast Standards
+**Learning:** Text color '#999' on light backgrounds (e.g., '#fafafa') fails WCAG AA contrast ratio (approx 2.9:1).
+**Action:** Use '#555' (approx 7.5:1) or darker for secondary text to ensure readability for all users.
