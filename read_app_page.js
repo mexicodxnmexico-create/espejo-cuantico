@@ -1,0 +1,10 @@
+const fs = require('fs');
+const content = fs.readFileSync('app/page.tsx', 'utf-8');
+const lines = content.split('\n');
+console.log(lines.slice(0, 50).join('\n'));
+console.log("--- CHUNK 2 ---");
+console.log(lines.slice(50, 100).join('\n'));
+console.log("--- CHUNK 3 ---");
+console.log(lines.slice(100, 150).join('\n'));
+console.log("--- CHUNK 4 ---");
+console.log(lines.slice(150).join('\n'));
