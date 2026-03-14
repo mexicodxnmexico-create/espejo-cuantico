@@ -14,13 +14,13 @@ function TestComponent() {
 
 test('QuantumContext test suite', async (t) => {
   const originalConsoleError = console.error;
-  let loggedError: any = null;
+  let loggedError: unknown = null;
   const originalLocalStorage = global.localStorage;
   const originalWindow = global.window;
 
   t.beforeEach(() => {
     loggedError = null;
-    console.error = (msg: string, e: any) => {
+    console.error = (msg: string, e: unknown) => {
       if (typeof msg === 'string' && (msg.includes('Failed to parse quantum state') || msg.includes('Failed to save quantum state'))) {
         loggedError = e;
       }
@@ -28,7 +28,7 @@ test('QuantumContext test suite', async (t) => {
 
     // Provide a mock window object to avoid "Cannot read properties of undefined (reading 'addEventListener')"
     // when the unloading hook runs.
-    (global as any).window = {
+    (global as unknown as { window: unknown }).window = {
       addEventListener: () => {},
       removeEventListener: () => {}
     };
@@ -37,7 +37,7 @@ test('QuantumContext test suite', async (t) => {
   t.afterEach(() => {
     console.error = originalConsoleError;
     global.localStorage = originalLocalStorage;
-    (global as any).window = originalWindow;
+    (global as unknown as { window: unknown }).window = originalWindow;
     loggedError = null;
   });
 
@@ -50,7 +50,7 @@ test('QuantumContext test suite', async (t) => {
       clear: () => {},
       length: 0,
       key: () => null
-    } as any;
+    } as unknown as Storage;
 
     let root: TestRenderer.ReactTestRenderer | undefined;
 
@@ -85,7 +85,7 @@ test('QuantumContext test suite', async (t) => {
       clear: () => {},
       length: 0,
       key: () => null
-    } as any;
+    } as unknown as Storage;
 
     let root: TestRenderer.ReactTestRenderer | undefined;
 
