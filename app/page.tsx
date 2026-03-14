@@ -158,10 +158,10 @@ export default function Home() {
         <PersonalInsight reflectionCount={state.reflectionCount} />
 
         {state.phase === "COLLAPSED" && (
-          <div style={COLLAPSED_STYLE}>
+          <div role="alert" style={COLLAPSED_STYLE}>
             <h3 style={COLLAPSED_H3_STYLE}>SISTEMA COLAPSADO</h3>
             <p style={COLLAPSED_P_STYLE}>La incoherencia ha alcanzado el punto crítico.</p>
-            <button onClick={() => dispatch("RESET")} style={RESET_BTN_STYLE}>
+            <button autoFocus onClick={() => dispatch("RESET")} style={RESET_BTN_STYLE}>
               Restaurar Espejo
             </button>
           </div>
