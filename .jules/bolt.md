@@ -19,3 +19,7 @@
 ## 2025-06-21 - Render Loop O(n) Date Parsing
 **Learning:** Found that invoking `new Date().toLocaleDateString()` inside a `map` function during the render cycle of a list (e.g., in `ProgressDashboard.tsx`) causes significant O(n) overhead due to repetitive string and object instantiations.
 **Action:** Extract expensive formatting operations into a `useMemo` hook that pre-calculates the formatted values. Then map over the memoized array, reducing the cost to O(1) for re-renders where the source array hasn't changed.
+
+## 2025-07-26 - O(1pass) Array Iteration & Date Object Allocation
+**Learning:** The `MeditationEngine.calculateProgress` method previously mapped over the sessions array twice (once for total duration, once for completed duration) and repeatedly allocated `new Date().getTime()` inside the loop for ongoing sessions. This caused an O(2n) performance bottleneck and unnecessary garbage collection.
+**Action:** Combine multiple `reduce` operations into a single O(n) loop, calculate `Date.now()` once before the loop, and use it where applicable to avoid repetitive instantiations and reduce algorithmic complexity.
