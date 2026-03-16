@@ -1,0 +1,14 @@
+gato << 'EOF' | git aplicar
+diff --git a/.github/workflows/manual-logging.yml b/.github/workflows/manual-logging.yml
+--- a/.github/workflows/manual-logging.yml
++++ b/.github/workflows/manual-logging.yml
+@@ -19,6 +19,8 @@
+         tipo: entorno
+         requerido: verdadero
+ 
++permisos: {}
++
+ trabajos:
+   registrar las entradas:
+     se ejecuta en: ubuntu-latest
+EOF
