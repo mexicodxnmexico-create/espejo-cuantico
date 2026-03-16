@@ -46,7 +46,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
             </div>
             <div className="dashboard-grid">
                 <div className="stat-card card-animate streak-card">
-                    <div className="card-icon fire-icon">🔥</div>
+                    <div className="card-icon fire-icon" aria-hidden="true">🔥</div>
                     <h3 className="card-title">Current Streak</h3>
                     <p className="stat-number">{streak}</p>
                     <p className="stat-label">days</p>
@@ -55,7 +55,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
                     </div>
                 </div>
                 <div className="stat-card card-animate meditation-card">
-                    <div className="card-icon meditation-icon">🧘</div>
+                    <div className="card-icon meditation-icon" aria-hidden="true">🧘</div>
                     <h3 className="card-title">Total Meditations</h3>
                     <p className="stat-number">{meditationStats.totalMeditations}</p>
                     <p className="stat-label">sessions completed</p>
@@ -64,7 +64,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
                     </div>
                 </div>
                 <div className="stat-card card-animate longest-card">
-                    <div className="card-icon trophy-icon">🏆</div>
+                    <div className="card-icon trophy-icon" aria-hidden="true">🏆</div>
                     <h3 className="card-title">Longest Streak</h3>
                     <p className="stat-number">{meditationStats.longestStreak}</p>
                     <p className="stat-label">days record</p>
@@ -73,7 +73,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
                     </div>
                 </div>
                 <div className="stat-card card-animate duration-card">
-                    <div className="card-icon clock-icon">⏱️</div>
+                    <div className="card-icon clock-icon" aria-hidden="true">⏱️</div>
                     <h3 className="card-title">Average Duration</h3>
                     <p className="stat-number">{meditationStats.averageDuration}</p>
                     <p className="stat-label">minutes per session</p>
@@ -93,7 +93,14 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
                             <p className="stat-number text-3xl">{Math.round(progressPercentage)}%</p>
                         </div>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div
+                        className="w-full bg-gray-700 rounded-full h-3 overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={Math.round(progressPercentage)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Weekly Target Progress"
+                    >
                         <div className="weekly-progress h-full rounded-full transition-all duration-500" style={{ width: `${progressPercentage}%` }}></div>
                     </div>
                 </div>
@@ -104,7 +111,7 @@ const ProgressDashboard: React.FC<ProgressDashboardProps> = memo(({
                     <div className="achievements-grid">
                         {formattedAchievements.map((achievement, index) => (
                             <div key={achievement.id} className="achievement-badge" style={{ animationDelay: `${index * 0.1}s` }}>
-                                <div className="achievement-icon">{achievement.icon}</div>
+                                <div className="achievement-icon" aria-hidden="true">{achievement.icon}</div>
                                 <p className="achievement-name">{achievement.name}</p>
                                 <p className="achievement-date text-xs text-gray-400">
                                     {achievement.formattedDate}
