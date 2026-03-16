@@ -10,6 +10,12 @@ import { CSSProperties } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { CollapsedState } from "@/components/CollapsedState";
 import { HistorySection } from "@/components/HistorySection";
+import dynamic from 'next/dynamic';
+
+const MeditacionAudioVisual3D = dynamic(
+  () => import("@/components/meditacion/MeditacionAudioVisual3D").then(mod => mod.MeditacionAudioVisual3D),
+  { ssr: false }
+);
 
 // ⚡ BOLT OPTIMIZATION: Extract static styles to module-level constants
 // This prevents object re-creation on every render, reducing garbage collection pressure.
@@ -20,10 +26,14 @@ const HEADER_SECTION_STYLE: CSSProperties = { textAlign: "center", marginBottom:
 const H1_STYLE: CSSProperties = { fontSize: "3.5rem", marginBottom: "1rem", letterSpacing: "-0.05em" };
 const STATUS_STYLE: CSSProperties = { fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" };
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
+const TABS_STYLE: CSSProperties = { display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "2rem" };
+const TAB_BUTTON_STYLE: CSSProperties = { padding: "0.5rem 1rem", border: "1px solid #ccc", borderRadius: "4px", background: "none", cursor: "pointer", fontSize: "1rem" };
+const TAB_BUTTON_ACTIVE_STYLE: CSSProperties = { ...TAB_BUTTON_STYLE, background: "#000", color: "#fff", borderColor: "#000" };
 
 export default function Home() {
   const { state, loading, dispatch } = useQuantum();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [activeTab, setActiveTab] = useState<"espejo" | "meditacion">("espejo");
 
   // ⚡ BOLT OPTIMIZATION: Limit rendering to last 50 items and use CSS for reversal.
   // This keeps keys stable (O(1) updates) and avoids O(n) reverse() calls.
@@ -58,23 +68,44 @@ export default function Home() {
 
       <Header />
 
+      <div style={TABS_STYLE}>
+        <button
+          style={activeTab === "espejo" ? TAB_BUTTON_ACTIVE_STYLE : TAB_BUTTON_STYLE}
+          onClick={() => setActiveTab("espejo")}
+        >
+          Espejo Cuántico
+        </button>
+        <button
+          style={activeTab === "meditacion" ? TAB_BUTTON_ACTIVE_STYLE : TAB_BUTTON_STYLE}
+          onClick={() => setActiveTab("meditacion")}
+        >
+          Meditación 3D
+        </button>
+      </div>
+
       <main style={MAIN_STYLE}>
-        <section style={HEADER_SECTION_STYLE}>
-          <h1 style={H1_STYLE}>Espejo Cuántico</h1>
-          <p role="status" aria-live="polite" style={STATUS_STYLE}>
-            {statusMessage}
-          </p>
-        </section>
+        {activeTab === "espejo" ? (
+          <>
+            <section style={HEADER_SECTION_STYLE}>
+              <h1 style={H1_STYLE}>Espejo Cuántico</h1>
+              <p role="status" aria-live="polite" style={STATUS_STYLE}>
+                {statusMessage}
+              </p>
+            </section>
 
-        <ControlPanel state={state} dispatch={dispatch} />
+            <ControlPanel state={state} dispatch={dispatch} />
 
-        <PersonalInsight reflectionCount={state.reflectionCount} />
+            <PersonalInsight reflectionCount={state.reflectionCount} />
 
-        {state.phase === "COLLAPSED" && (
-          <CollapsedState dispatch={dispatch} />
+            {state.phase === "COLLAPSED" && (
+              <CollapsedState dispatch={dispatch} />
+            )}
+
+            <HistorySection historyToRender={historyToRender} startIndex={startIndex} />
+          </>
+        ) : (
+          <MeditacionAudioVisual3D onCompletarMeditacion={() => setActiveTab("espejo")} />
         )}
-
-        <HistorySection historyToRender={historyToRender} startIndex={startIndex} />
       </main>
 
       <footer style={FOOTER_STYLE}>

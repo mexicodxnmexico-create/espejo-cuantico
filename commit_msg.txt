@@ -1,0 +1,9 @@
+feat: Integrate 3D Sacred Geometry Meditation Portal
+
+Integrates the 3D meditation components from the quantum mirror package.
+Included updates:
+- Installed three, @react-three/fiber, and @react-three/drei
+- Added components/3d and components/meditacion components
+- Fixed static typing and unused variable errors in imported 3D components
+- Updated app/page.tsx to render MeditacionAudioVisual3D dynamically (ssr: false)
+- Added Tab UI in app/page.tsx to allow toggling between the Quantum Mirror and the new 3D Meditation features.
