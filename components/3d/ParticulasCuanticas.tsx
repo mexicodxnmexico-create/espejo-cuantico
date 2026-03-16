@@ -1,0 +1,131 @@
+"use client";
+
+import { useRef, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+
+interface ParticulasCuanticasProps {
+  frecuencia: number;
+  cantidad: number;
+}
+
+export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuanticasProps) {
+  const particulasRef = useRef<THREE.Points>(null);
+  const tiempo = useRef(0);
+
+  const [posiciones, colores, tamaños] = useMemo(() => {
+    const pos = new Float32Array(cantidad * 3);
+    const col = new Float32Array(cantidad * 3);
+    const tam = new Float32Array(cantidad);
+
+    const colorBase = obtenerColorDeFrecuencia(frecuencia);
+
+    for (let i = 0; i < cantidad; i++) {
+      const i3 = i * 3;
+
+      const radio = Math.random() * 5 + 3;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+
+      pos[i3] = radio * Math.sin(phi) * Math.cos(theta);
+      pos[i3 + 1] = radio * Math.sin(phi) * Math.sin(theta);
+      pos[i3 + 2] = radio * Math.cos(phi);
+
+      col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
+      col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
+      col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
+
+      tam[i] = Math.random() * 0.05 + 0.02;
+    }
+
+    return [pos, col, tam];
+  }, [cantidad, frecuencia]);
+
+  useFrame((_state, delta) => {
+    if (!particulasRef.current) return;
+
+    tiempo.current += delta;
+
+    const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
+
+    for (let i = 0; i < cantidad; i++) {
+      const i3 = i * 3;
+
+      const x = posicionesArray[i3];
+      const y = posicionesArray[i3 + 1];
+      const z = posicionesArray[i3 + 2];
+
+      const distancia = Math.sqrt(x * x + y * y + z * z);
+      const velocidad = (frecuencia / 500) * delta;
+
+      posicionesArray[i3] += Math.sin(tiempo.current + i) * velocidad;
+      posicionesArray[i3 + 1] += Math.cos(tiempo.current + i) * velocidad;
+      posicionesArray[i3 + 2] += Math.sin(tiempo.current * 0.5 + i) * velocidad;
+
+      const nuevaDistancia = Math.sqrt(
+        posicionesArray[i3] * posicionesArray[i3] +
+        posicionesArray[i3 + 1] * posicionesArray[i3 + 1] +
+        posicionesArray[i3 + 2] * posicionesArray[i3 + 2]
+      );
+
+      if (nuevaDistancia > 8 || nuevaDistancia < 3) {
+        const factor = (distancia / nuevaDistancia);
+        posicionesArray[i3] *= factor;
+        posicionesArray[i3 + 1] *= factor;
+        posicionesArray[i3 + 2] *= factor;
+      }
+    }
+
+    particulasRef.current.geometry.attributes.position.needsUpdate = true;
+    particulasRef.current.rotation.y += delta * 0.05;
+  });
+
+  if (cantidad === 0) return null;
+
+  return (
+    <points ref={particulasRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={cantidad}
+          array={posiciones}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          count={cantidad}
+          array={colores}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-size"
+          count={cantidad}
+          array={tamaños}
+          itemSize={1}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.05}
+        vertexColors
+        transparent
+        opacity={0.8}
+        sizeAttenuation
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+}
+
+function obtenerColorDeFrecuencia(frecuencia: number): { r: number; g: number; b: number } {
+  const colores: Record<number, { r: number; g: number; b: number }> = {
+    396: { r: 0.9, g: 0.22, b: 0.27 },
+    417: { r: 0.97, g: 0.5, b: 0 },
+    528: { r: 0.02, g: 0.84, b: 0.63 },
+    639: { r: 0.07, g: 0.54, b: 0.7 },
+    741: { r: 0.03, g: 0.23, b: 0.3 },
+    852: { r: 0.51, g: 0.22, b: 0.93 }
+  };
+
+  return colores[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+}
