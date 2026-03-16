@@ -2,3 +2,24 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {}
 }
+// src/pages/api/share/[token].ts
+import { NextApiRequest, NextApiResponse } from 'next';
+
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { token } = req.query;
+
+  // Simulación de experiencia personalizada según el token
+  const experiences = {
+    "XYZ123": "Portal de energía expandido",
+    "ABC456": "Puente de luz compartido",
+    "viral-unique-key": "Campo cuántico colectivo"
+  };
+
+  const experience = experiences[token as string] || "Experiencia inicial";
+
+  res.status(200).json({
+    token,
+    experience,
+    message: `Tu enlace viral desbloquea: ${experience}`
+  });
+}
