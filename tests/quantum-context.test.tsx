@@ -28,29 +28,35 @@ test('QuantumContext test suite', async (t) => {
 
     // Provide a mock window object to avoid "Cannot read properties of undefined (reading 'addEventListener')"
     // when the unloading hook runs.
-    (global as unknown as { window: unknown }).window = {
+    Object.defineProperty(global, 'window', {
+      value: {
       addEventListener: () => {},
       removeEventListener: () => {}
-    };
+      },
+      configurable: true
+    });
   });
 
   t.afterEach(() => {
     console.error = originalConsoleError;
-    global.localStorage = originalLocalStorage;
-    (global as unknown as { window: unknown }).window = originalWindow;
+    Object.defineProperty(global, 'localStorage', { value: originalLocalStorage, configurable: true });
+    Object.defineProperty(global, 'window', { value: originalWindow, configurable: true });
     loggedError = null;
   });
 
   await t.test('handles localStorage getItem error gracefully', () => {
     const err = new Error('Simulated localStorage access error');
-    global.localStorage = {
+    Object.defineProperty(global, 'localStorage', {
+      value: {
       getItem: () => { throw err; },
       setItem: () => {},
       removeItem: () => {},
       clear: () => {},
       length: 0,
       key: () => null
-    } as unknown as Storage;
+      },
+      configurable: true
+    });
 
     let root: TestRenderer.ReactTestRenderer | undefined;
 
@@ -78,14 +84,17 @@ test('QuantumContext test suite', async (t) => {
 
   await t.test('handles localStorage setItem error gracefully on timer', async () => {
     // This tests the setItem logic in the 500ms timeout
-    global.localStorage = {
+    Object.defineProperty(global, 'localStorage', {
+      value: {
       getItem: () => JSON.stringify(INITIAL_STATE),
       setItem: () => { throw new Error('Quota exceeded'); },
       removeItem: () => {},
       clear: () => {},
       length: 0,
       key: () => null
-    } as unknown as Storage;
+      },
+      configurable: true
+    });
 
     let root: TestRenderer.ReactTestRenderer | undefined;
 
