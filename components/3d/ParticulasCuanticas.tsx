@@ -9,6 +9,16 @@ interface ParticulasCuanticasProps {
   cantidad: number;
 }
 
+// ⚡ BOLT: Move static color mapping out of the render loop to avoid re-creation
+const COLORES_SOLFEGGIO: Record<number, { r: number; g: number; b: number }> = {
+  396: { r: 0.9, g: 0.22, b: 0.27 },
+  417: { r: 0.97, g: 0.5, b: 0 },
+  528: { r: 0.02, g: 0.84, b: 0.63 },
+  639: { r: 0.07, g: 0.54, b: 0.7 },
+  741: { r: 0.03, g: 0.23, b: 0.3 },
+  852: { r: 0.51, g: 0.22, b: 0.93 }
+};
+
 export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuanticasProps) {
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
@@ -18,7 +28,7 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
 
-    const colorBase = obtenerColorDeFrecuencia(frecuencia);
+    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -42,10 +52,11 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
-    if (!particulasRef.current) return;
+    if (!particulasRef.current || cantidad === 0) return;
 
     tiempo.current += delta;
-
+    const t = tiempo.current;
+    const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
     for (let i = 0; i < cantidad; i++) {
@@ -55,24 +66,26 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      const distancia = Math.sqrt(x * x + y * y + z * z);
-      const velocidad = (frecuencia / 500) * delta;
+      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
+      // and squared distance to avoid Math.sqrt in the common case.
+      const phase = t + i;
+      const nextX = x + Math.sin(phase) * velocidad;
+      const nextY = y + Math.cos(phase) * velocidad;
+      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
 
-      posicionesArray[i3] += Math.sin(tiempo.current + i) * velocidad;
-      posicionesArray[i3 + 1] += Math.cos(tiempo.current + i) * velocidad;
-      posicionesArray[i3 + 2] += Math.sin(tiempo.current * 0.5 + i) * velocidad;
+      const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
-      const nuevaDistancia = Math.sqrt(
-        posicionesArray[i3] * posicionesArray[i3] +
-        posicionesArray[i3 + 1] * posicionesArray[i3 + 1] +
-        posicionesArray[i3 + 2] * posicionesArray[i3 + 2]
-      );
-
-      if (nuevaDistancia > 8 || nuevaDistancia < 3) {
-        const factor = (distancia / nuevaDistancia);
-        posicionesArray[i3] *= factor;
-        posicionesArray[i3 + 1] *= factor;
-        posicionesArray[i3 + 2] *= factor;
+      // Range [3, 8] -> Squared Range [9, 64]
+      if (nextDistSq > 64 || nextDistSq < 9) {
+        const prevDistSq = x * x + y * y + z * z;
+        const scale = Math.sqrt(prevDistSq / nextDistSq);
+        posicionesArray[i3] = nextX * scale;
+        posicionesArray[i3 + 1] = nextY * scale;
+        posicionesArray[i3 + 2] = nextZ * scale;
+      } else {
+        posicionesArray[i3] = nextX;
+        posicionesArray[i3 + 1] = nextY;
+        posicionesArray[i3 + 2] = nextZ;
       }
     }
 
@@ -115,17 +128,4 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       />
     </points>
   );
-}
-
-function obtenerColorDeFrecuencia(frecuencia: number): { r: number; g: number; b: number } {
-  const colores: Record<number, { r: number; g: number; b: number }> = {
-    396: { r: 0.9, g: 0.22, b: 0.27 },
-    417: { r: 0.97, g: 0.5, b: 0 },
-    528: { r: 0.02, g: 0.84, b: 0.63 },
-    639: { r: 0.07, g: 0.54, b: 0.7 },
-    741: { r: 0.03, g: 0.23, b: 0.3 },
-    852: { r: 0.51, g: 0.22, b: 0.93 }
-  };
-
-  return colores[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 }
