@@ -1,10 +1,3 @@
-🎯 **What:** The `MeditationEngine` logic in `lib/meditation-engine.ts` lacked a test suite. A divide-by-zero vulnerability existed in `calculateProgress` when `totalDuration` was 0.
-
-📊 **Coverage:** A new suite of tests was written in `tests/meditation-engine.test.ts` to assert logic on:
-- Object initialization
-- `startSession` behavior
-- `endSession` behavior and side effects
-- `calculateProgress` success flow and intermediate duration testing
-- 0-duration edge cases preventing `NaN` error assignments
-
-✨ **Result:** Test coverage improved across the application logic. Now edge-case scenarios return `0` instead of `NaN` for meditation progress preventing upstream UI failures.
+🎯 What: Added tests for `QuantumCanvas.tsx`.
+📊 Coverage: Added tests to ensure `QuantumCanvas` properly renders and delegates props to the mocked `@react-three/fiber` and `@react-three/drei` components (Canvas, Stars, OrbitControls, ambientLight, pointLight).
+✨ Result: `QuantumCanvas` is now fully tested under Node's native test runner despite `@react-three/fiber` module mocking complexities.
