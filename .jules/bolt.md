@@ -27,3 +27,7 @@
 ## 2025-06-23 - Squared Distance and Single-pass Loop Optimization
 **Learning:** Found that `ParticulasCuanticas.tsx` was performing redundant `Math.sqrt` and trigonometric calls inside a 1000-iteration `useFrame` loop. In most frames, particles are within bounds, so calculating the true distance is unnecessary.
 **Action:** Implemented squared distance checks (`nextDistSq > 64 || nextDistSq < 9`) to avoid `Math.sqrt` in the common path. Pre-calculated loop invariants and used local variables to minimize TypedArray overhead. Also refactored `MeditationEngine` to use a single-pass loop and `Date.now()`, reducing complexity from $O(2pass)$ to $O(1pass)$.
+
+## 2025-06-24 - Timer-Driven O(n) Array Traversal
+**Learning:** Found that an inline `Array.prototype.find()` in `MeditacionAudioVisual3D.tsx` was executing on every render. Because the component uses an interval to update a countdown timer every second, this caused an unnecessary O(n) traversal every second during an active meditation session.
+**Action:** Use `useMemo` to cache the result of array lookups when the dependencies (like selected ID) haven't changed, avoiding redundant O(n) work during frequent state updates like timers or animations.
