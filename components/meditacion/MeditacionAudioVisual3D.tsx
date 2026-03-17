@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
 import { EscenaMeditacion3D } from "../3d/EscenaMeditacion3D";
 
 interface Props {
@@ -31,6 +31,12 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
   const [tiempoRestante, setTiempoRestante] = useState(0);
 
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  // ⚡ BOLT OPTIMIZATION: Memoize geometry name lookup to prevent O(n) array traversal
+  // on every render tick during active meditation countdowns.
+  const nombreGeometriaSeleccionada = useMemo(() => {
+    return GEOMETRIAS.find(g => g.id === geometriaSeleccionada)?.nombre;
+  }, [geometriaSeleccionada]);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
 
@@ -259,7 +265,7 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           💡 Acerca de esta experiencia
         </h3>
         <p style={{ margin: 0, color: "#0466c8", lineHeight: "1.6" }}>
-          La frecuencia de {frecuenciaSeleccionada} Hz combinada con la geometría sagrada {GEOMETRIAS.find(g => g.id === geometriaSeleccionada)?.nombre} crea un campo de resonancia cuántica que facilita estados profundos de meditación. Las visualizaciones tridimensionales interactivas sincronizan con las frecuencias sonoras para optimizar la coherencia cerebral y la armonización energética.
+          La frecuencia de {frecuenciaSeleccionada} Hz combinada con la geometría sagrada {nombreGeometriaSeleccionada} crea un campo de resonancia cuántica que facilita estados profundos de meditación. Las visualizaciones tridimensionales interactivas sincronizan con las frecuencias sonoras para optimizar la coherencia cerebral y la armonización energética.
         </p>
       </div>
     </div>
