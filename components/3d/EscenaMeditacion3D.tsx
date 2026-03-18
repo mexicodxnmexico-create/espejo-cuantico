@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, Environment } from "@react-three/drei";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, memo } from "react";
 import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
 import { ParticulasCuanticas } from "./ParticulasCuanticas";
 
@@ -12,7 +12,8 @@ interface EscenaMeditacion3DProps {
   tipoGeometria: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function EscenaMeditacion3D({ frecuencia, activo, tipoGeometria }: EscenaMeditacion3DProps) {
+// ⚡ BOLT: Wrap in React.memo to prevent massive 3D canvas re-renders caused by parent 1-second timers
+export const EscenaMeditacion3D = memo(function EscenaMeditacion3D({ frecuencia, activo, tipoGeometria }: EscenaMeditacion3DProps) {
   const [intensidad, setIntensidad] = useState(50);
 
   useEffect(() => {
@@ -77,4 +78,4 @@ export function EscenaMeditacion3D({ frecuencia, activo, tipoGeometria }: Escena
       </Canvas>
     </div>
   );
-}
+});
