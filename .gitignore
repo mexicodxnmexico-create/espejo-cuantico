@@ -48,3 +48,4 @@ yarn-error.log*
 # local persistence
 quantum_db.json
 dev_server.log
+.nyc_output
