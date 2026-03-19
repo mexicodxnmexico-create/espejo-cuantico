@@ -9,6 +9,19 @@ export interface QuantumSystemState {
   lastUpdate: number;
 }
 
+
+// ⚡ BOLT OPTIMIZATION: Fixed-size array buffer insertion
+// Avoids [...arr, item].slice(-cap) which creates unnecessary intermediate arrays.
+// Using slice() with a start index and push() is even faster than shift()
+// as it avoids O(N) re-indexing while still minimizing garbage collection pressure.
+function pushWithCap<T>(arr: T[], item: T, cap: number): T[] {
+  // If array is at or over capacity, start slicing from the element that will bring length to cap - 1
+  const startIdx = arr.length >= cap ? arr.length - cap + 1 : 0;
+  const newArr = arr.slice(startIdx);
+  newArr.push(item);
+  return newArr;
+}
+
 export const INITIAL_STATE: QuantumSystemState = {
   phase: "IDLE",
   coherence: 100,
@@ -29,7 +42,7 @@ export class QuantumEngine {
         newState.entropy += 2;
         newState.coherence = Math.max(0, newState.coherence - 1);
         // ⚡ BOLT: Cap history at 100 items to prevent unbounded memory growth
-        newState.history = [...state.history, "Observación registrada. La entropía aumenta."].slice(-100);
+        newState.history = pushWithCap(state.history, "Observación registrada. La entropía aumenta.", 100);
         break;
 
       case "REFLECT":
@@ -39,11 +52,11 @@ export class QuantumEngine {
           newState.entropy += 5;
           newState.reflectionCount += 1;
           // ⚡ BOLT: Cap history at 100 items to prevent unbounded memory growth
-          newState.history = [...state.history, "Reflexión proyectada. El sistema se recalibra."].slice(-100);
+          newState.history = pushWithCap(state.history, "Reflexión proyectada. El sistema se recalibra.", 100);
         } else {
           newState.phase = "COLLAPSED";
           // ⚡ BOLT: Cap history at 100 items to prevent unbounded memory growth
-          newState.history = [...state.history, "Colapso detectado. Coherencia insuficiente para reflejar."].slice(-100);
+          newState.history = pushWithCap(state.history, "Colapso detectado. Coherencia insuficiente para reflejar.", 100);
         }
         break;
 
