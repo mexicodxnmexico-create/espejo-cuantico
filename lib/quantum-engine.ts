@@ -9,19 +9,6 @@ export interface QuantumSystemState {
   lastUpdate: number;
 }
 
-
-// ⚡ BOLT OPTIMIZATION: Fixed-size array buffer insertion
-// Avoids [...arr, item].slice(-cap) which creates unnecessary intermediate arrays.
-// Using slice() with a start index and push() is even faster than shift()
-// as it avoids O(N) re-indexing while still minimizing garbage collection pressure.
-function pushWithCap<T>(arr: T[], item: T, cap: number): T[] {
-  // If array is at or over capacity, start slicing from the element that will bring length to cap - 1
-  const startIdx = arr.length >= cap ? arr.length - cap + 1 : 0;
-  const newArr = arr.slice(startIdx);
-  newArr.push(item);
-  return newArr;
-}
-
 export const INITIAL_STATE: QuantumSystemState = {
   phase: "IDLE",
   coherence: 100,
