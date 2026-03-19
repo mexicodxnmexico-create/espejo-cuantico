@@ -1,22 +1,14 @@
-name: Manual Logging
+gato << 'EOF' | git aplicar
+diff --git a/.github/workflows/manual-logging.yml b/.github/workflows/manual-logging.yml
+--- a/.github/workflows/manual-logging.yml
++++ b/.github/workflows/manual-logging.yml
+@@ -19,6 +19,8 @@
+         tipo: entorno
+         requerido: verdadero
 
-on:
-  workflow_dispatch:
-    inputs:
-      entorno:
-        description: 'Entorno de ejecución'
-        required: true
-        default: 'production'
-
-permissions: {}
-
-jobs:
-  registrar-las-entradas:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Log message
-        run: echo "Registrando entrada en el entorno ${{ github.event.inputs.entorno }}"
-        
++permisos: {}
++
+ trabajos:
+   registrar las entradas:
+     se ejecuta en: ubuntu-latest
+EOF
