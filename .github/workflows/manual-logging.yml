@@ -1,22 +1,12 @@
 name: Manual Logging
-
-on:
-  workflow_dispatch:
-    inputs:
-      entorno:
-        description: 'Entorno de ejecución'
-        required: true
-        default: 'production'
-
-permissions: {}
+on: workflow_dispatch
 
 jobs:
-  registrar-las-entradas:
+  log-entries:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
       - name: Log message
-        run: echo "Registrando entrada en el entorno ${{ github.event.inputs.entorno }}"
+        run: echo "Registrando entrada..."
         
