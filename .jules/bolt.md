@@ -27,3 +27,7 @@
 ## 2025-06-23 - Squared Distance and Single-pass Loop Optimization
 **Learning:** Found that `ParticulasCuanticas.tsx` was performing redundant `Math.sqrt` and trigonometric calls inside a 1000-iteration `useFrame` loop. In most frames, particles are within bounds, so calculating the true distance is unnecessary.
 **Action:** Implemented squared distance checks (`nextDistSq > 64 || nextDistSq < 9`) to avoid `Math.sqrt` in the common path. Pre-calculated loop invariants and used local variables to minimize TypedArray overhead. Also refactored `MeditationEngine` to use a single-pass loop and `Date.now()`, reducing complexity from $O(2pass)$ to $O(1pass)$.
+
+## 2025-07-15 - Fixed-Size Array Buffer Allocations
+**Learning:** To efficiently maintain a fixed-size array buffer (e.g., length 100) without mutating the original array, using `slice(startIndex)` followed by `push()` is up to 3-4x faster than using spread syntax and `.slice(-N)` (`[...arr, item].slice(-N)`). The spread approach creates unnecessary intermediate array allocations and increases garbage collection pressure in hot paths like state transitions.
+**Action:** Implemented a `pushWithCap` helper function in `lib/quantum-engine.ts` that uses `slice/push` to minimize heap allocations and avoid O(N) array re-indexing from `shift()` and avoid code duplication across transition cases.
