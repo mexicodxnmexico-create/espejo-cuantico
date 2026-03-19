@@ -18,6 +18,19 @@ export const INITIAL_STATE: QuantumSystemState = {
   lastUpdate: Date.now(),
 };
 
+/**
+ * ⚡ BOLT: Helper to update a fixed-size array efficiently.
+ * While shift() is O(n), this pattern avoids double-allocation compared to [...arr, item].slice(-cap).
+ */
+function pushWithCap(history: string[], entry: string, cap: number = 100): string[] {
+  const newHistory = history.slice();
+  newHistory.push(entry);
+  if (newHistory.length > cap) {
+    newHistory.shift();
+  }
+  return newHistory;
+}
+
 export class QuantumEngine {
   static transition(state: QuantumSystemState, action: "OBSERVE" | "REFLECT" | "RESET"): QuantumSystemState {
     // ⚡ BOLT: Fix mutation bug by ensuring history is updated immutably
@@ -28,8 +41,8 @@ export class QuantumEngine {
         newState.phase = "OBSERVING";
         newState.entropy += 2;
         newState.coherence = Math.max(0, newState.coherence - 1);
-        // ⚡ BOLT: Cap history at 100 items to prevent unbounded memory growth
-        newState.history = [...state.history, "Observación registrada. La entropía aumenta."].slice(-100);
+        // ⚡ BOLT: Optimized fixed-size array update
+        newState.history = pushWithCap(state.history, "Observación registrada. La entropía aumenta.");
         break;
 
       case "REFLECT":
@@ -38,12 +51,12 @@ export class QuantumEngine {
           newState.coherence = Math.max(0, newState.coherence - 5);
           newState.entropy += 5;
           newState.reflectionCount += 1;
-          // ⚡ BOLT: Cap history at 100 items to prevent unbounded memory growth
-          newState.history = [...state.history, "Reflexión proyectada. El sistema se recalibra."].slice(-100);
+          // ⚡ BOLT: Optimized fixed-size array update
+          newState.history = pushWithCap(state.history, "Reflexión proyectada. El sistema se recalibra.");
         } else {
           newState.phase = "COLLAPSED";
-          // ⚡ BOLT: Cap history at 100 items to prevent unbounded memory growth
-          newState.history = [...state.history, "Colapso detectado. Coherencia insuficiente para reflejar."].slice(-100);
+          // ⚡ BOLT: Optimized fixed-size array update
+          newState.history = pushWithCap(state.history, "Colapso detectado. Coherencia insuficiente para reflejar.");
         }
         break;
 
