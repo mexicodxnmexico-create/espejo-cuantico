@@ -1,0 +1,55 @@
+modelParameters:
+  max_completion_tokens: 15686
+  temperature: 0.7
+  top_p: 1
+  stop: []
+  frequency_penalty: 0
+  presence_penalty: 0
+model: openai/gpt-4.1
+messages:
+  - role: system
+    content: |
+      async function obtenerMeditacion() {
+        const respuesta = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer TU_API_KEY` // Aquí va tu clave secreta
+          },
+          body: JSON.stringify({
+            model: "gpt-4-turbo", // o el modelo que estés usando
+            response_format: { type: "json_object" }, // AQUÍ ACTIVAS EL MODO JSON
+            temperature: 0.7,
+            messages: [
+              {
+                role: "system",
+                content: "Eres un guía experto en el alma cuántica. Debes responder SIEMPRE en formato JSON."
+              },
+              {
+                role: "user",
+                content: "Genera una meditación corta. El JSON debe tener la siguiente estructura exacta: {'titulo': 'string', 'minutos': 'number', 'pasos': ['string', 'string']}."
+              }
+            ]
+          })
+        });
+
+        const datos = await respuesta.json();
+        
+        // El modelo te devolverá un texto que es un JSON válido, así que lo parseamos:
+        const resultadoJSON = JSON.parse(datos.choices[0].message.content);
+        
+        console.log(resultadoJSON.titulo); // Ya puedes usar este dato directo en tu UI
+        console.log(resultadoJSON.pasos);
+      }
+  - role: user
+    content: |-
+      {
+        "titulo": "Meditación de Respiración Cuántica",
+        "minutos": 5,
+        "pasos": [
+          "Siéntate cómodamente y cierra los ojos.",
+          "Inhala profundamente, siente la energía cuántica llenando tu cuerpo.",
+          "Exhala lentamente, visualiza la luz expandiéndose desde tu alma.",
+          "Repite el proceso durante cinco minutos, enfocando tu atención en la conexión entre tu cuerpo y tu alma."
+        ]
+      }
