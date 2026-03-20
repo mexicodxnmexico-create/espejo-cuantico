@@ -9,12 +9,13 @@ export interface QuantumSystemState {
   lastUpdate: number;
 }
 
-
-// ⚡ BOLT OPTIMIZATION: Fixed-size array buffer insertion
-// Avoids [...arr, item].slice(-cap) which creates unnecessary intermediate arrays.
-// Using slice() with a start index and push() is even faster than shift()
-// as it avoids O(N) re-indexing while still minimizing garbage collection pressure.
-function pushWithCap<T>(arr: T[], item: T, cap: number): T[] {
+/**
+ * ⚡ BOLT OPTIMIZATION: Fixed-size array buffer insertion
+ * Avoids [...arr, item].slice(-cap) which creates unnecessary intermediate arrays.
+ * Using slice() with a start index and push() is even faster than shift()
+ * as it avoids O(N) re-indexing while still minimizing garbage collection pressure.
+ */
+function pushWithCap<T>(arr: T[], item: T, cap: number = 100): T[] {
   // If array is at or over capacity, start slicing from the element that will bring length to cap - 1
   const startIdx = arr.length >= cap ? arr.length - cap + 1 : 0;
   const newArr = arr.slice(startIdx);
@@ -30,19 +31,6 @@ export const INITIAL_STATE: QuantumSystemState = {
   reflectionCount: 0,
   lastUpdate: Date.now(),
 };
-
-/**
- * ⚡ BOLT: Helper to update a fixed-size array efficiently.
- * While shift() is O(n), this pattern avoids double-allocation compared to [...arr, item].slice(-cap).
- */
-function pushWithCap(history: string[], entry: string, cap: number = 100): string[] {
-  const newHistory = history.slice();
-  newHistory.push(entry);
-  if (newHistory.length > cap) {
-    newHistory.shift();
-  }
-  return newHistory;
-}
 
 export class QuantumEngine {
   static transition(state: QuantumSystemState, action: "OBSERVE" | "REFLECT" | "RESET"): QuantumSystemState {
