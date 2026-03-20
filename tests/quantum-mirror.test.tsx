@@ -90,6 +90,55 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+
+  await t.test('handles negative and zero beta values correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: -45, gamma: -10 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    // 432 + Math.round(-45 / 10) = 432 - 4 = 428
+    assert.strictEqual(freqDiv.children[0], '428');
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '-45');
+    assert.strictEqual(gammaDiv.children[0], '-10');
+
+    // Dispatch another event with beta: 0
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 20, beta: 0, gamma: 20 });
+        });
+      }
+    });
+
+    // 432 + Math.round(0 / 10) = 432
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '20');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '20');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
