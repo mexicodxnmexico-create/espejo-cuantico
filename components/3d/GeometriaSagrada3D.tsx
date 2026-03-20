@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -39,6 +39,14 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
       return crearTorus();
     }
   }, [tipo]);
+
+  // ⚡ BOLT OPTIMIZATION: Dispose of geometries when they are no longer needed to prevent GPU memory leaks
+  useEffect(() => {
+    return () => {
+      const uniqueGeos = new Set(geometrias.map(g => g.geometria));
+      uniqueGeos.forEach(geo => geo.dispose());
+    };
+  }, [geometrias]);
 
   // Animación continua
   useFrame((_state, delta) => {
@@ -80,15 +88,16 @@ interface GeoData {
   posicion: THREE.Vector3;
 }
 
-// ⚡ OPTIMIZACIÓN: Funciones de generación de geometría memoizadas
+// ⚡ OPTIMIZACIÓN: Funciones de generación de geometría memoizadas y con reutilización de instancias
 function crearFlorDeLaVida(): GeoData[] {
   const geometrias: GeoData[] = [];
   const radio = 1;
   const numCirculos = 6;
+  const torusGeo = new THREE.TorusGeometry(radio, 0.05, 16, 100);
 
   // Círculo central
   geometrias.push({
-    geometria: new THREE.TorusGeometry(radio, 0.05, 16, 100),
+    geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
@@ -99,7 +108,7 @@ function crearFlorDeLaVida(): GeoData[] {
     const y = Math.sin(angulo) * radio;
 
     geometrias.push({
-      geometria: new THREE.TorusGeometry(radio, 0.05, 16, 100),
+      geometria: torusGeo,
       posicion: new THREE.Vector3(x, y, 0)
     });
   }
@@ -111,7 +120,7 @@ function crearFlorDeLaVida(): GeoData[] {
     const y = Math.sin(angulo) * radio * 1.732;
 
     geometrias.push({
-      geometria: new THREE.TorusGeometry(radio, 0.05, 16, 100),
+      geometria: torusGeo,
       posicion: new THREE.Vector3(x, y, 0)
     });
   }
@@ -122,18 +131,17 @@ function crearFlorDeLaVida(): GeoData[] {
 function crearMerkaba(): GeoData[] {
   const geometrias: GeoData[] = [];
   const tamaño = 1.5;
+  const tetraGeo = new THREE.TetrahedronGeometry(tamaño);
 
   // Tetraedro superior
-  const geometriaTetra = new THREE.TetrahedronGeometry(tamaño);
   geometrias.push({
-    geometria: geometriaTetra,
+    geometria: tetraGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
   // Tetraedro inferior (invertido)
-  const geometriaTetra2 = new THREE.TetrahedronGeometry(tamaño);
   geometrias.push({
-    geometria: geometriaTetra2,
+    geometria: tetraGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
@@ -147,10 +155,14 @@ function crearCuboMetatron(): GeoData[] {
     [1, 1, -1], [-1, 1, -1], [-1, -1, -1], [1, -1, -1]
   ];
 
+  const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
+  // Cache cylinder geometries by their length to ensure visual correctness while reusing instances
+  const cylinderCache = new Map<number, THREE.CylinderGeometry>();
+
   // Esferas en cada vértice
   vertices.forEach(([x, y, z]) => {
     geometrias.push({
-      geometria: new THREE.SphereGeometry(0.15, 16, 16),
+      geometria: sphereGeo,
       posicion: new THREE.Vector3(x, y, z)
     });
   });
@@ -166,10 +178,14 @@ function crearCuboMetatron(): GeoData[] {
     const inicio = new THREE.Vector3(...vertices[i]);
     const fin = new THREE.Vector3(...vertices[j]);
     const direccion = new THREE.Vector3().subVectors(fin, inicio);
-    const longitud = direccion.length();
+    const longitud = parseFloat(direccion.length().toFixed(4));
+
+    if (!cylinderCache.has(longitud)) {
+      cylinderCache.set(longitud, new THREE.CylinderGeometry(0.03, 0.03, longitud, 8));
+    }
 
     geometrias.push({
-      geometria: new THREE.CylinderGeometry(0.03, 0.03, longitud, 8),
+      geometria: cylinderCache.get(longitud)!,
       posicion: inicio.clone().add(direccion.multiplyScalar(0.5))
     });
   });
@@ -179,16 +195,17 @@ function crearCuboMetatron(): GeoData[] {
 
 function crearTorus(): GeoData[] {
   const geometrias: GeoData[] = [];
+  const torusGeo = new THREE.TorusGeometry(1.5, 0.3, 16, 100);
 
   // Torus principal
   geometrias.push({
-    geometria: new THREE.TorusGeometry(1.5, 0.3, 16, 100),
+    geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
   // Torus secundario perpendicular
   geometrias.push({
-    geometria: new THREE.TorusGeometry(1.5, 0.3, 16, 100),
+    geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 

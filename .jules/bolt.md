@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - 3D Resource Management and Visual Correctness
+**Learning:** In React Three Fiber components that generate geometries dynamically, tracking created geometry instances and invoking `.dispose()` in a `useEffect` cleanup function is essential to prevent GPU memory leaks. Furthermore, when reusing geometries for performance, any parameter that affects vertex data (like length) must be accounted for in the reuse logic (e.g., using a Map to cache by size) to avoid visual regressions like disconnected vertices.
+**Action:** Always implement `.dispose()` cleanup for Three.js resources and use keyed caches when reusing geometries with variable dimensions.
