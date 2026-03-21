@@ -91,6 +91,45 @@ test('QuantumMirror deviceorientation logic', async (t) => {
   });
 
 
+
+  await t.test('handles floating point beta values requiring rounding', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 45.6, gamma: 10 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+
+    // 432 + Math.round(45.6 / 10) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 44.4, gamma: 10 });
+        });
+      }
+    });
+
+    // 432 + Math.round(44.4 / 10) = 432 + 4 = 436
+    assert.strictEqual(freqDiv.children[0], '436');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles negative and zero beta values correctly', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
