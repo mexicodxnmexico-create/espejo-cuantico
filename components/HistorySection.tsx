@@ -14,14 +14,13 @@ const LOG_CONTAINER_STYLE: CSSProperties = {
 const LIST_STYLE: CSSProperties = { display: "flex", flexDirection: "column-reverse", listStyle: "none", padding: 0, margin: 0 };
 const HISTORY_ITEM_STYLE_BASE: CSSProperties = { marginBottom: "0.5rem", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" };
 
-const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
-  const style = useMemo<CSSProperties>(() => ({
-    ...HISTORY_ITEM_STYLE_BASE,
-    color: isLatest ? "#000" : "#555"
-  }), [isLatest]);
+// ⚡ BOLT OPTIMIZATION: Extract static styles to prevent re-creation and remove redundant useMemo
+const STYLE_LATEST: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#000" };
+const STYLE_NORMAL: CSSProperties = { ...HISTORY_ITEM_STYLE_BASE, color: "#555" };
 
+const HistoryItem = memo(function HistoryItem({ entry, isLatest }: { entry: string; isLatest: boolean }) {
   return (
-    <li style={style}>
+    <li style={isLatest ? STYLE_LATEST : STYLE_NORMAL}>
       {isLatest ? "> " : "  "} {entry}
     </li>
   );

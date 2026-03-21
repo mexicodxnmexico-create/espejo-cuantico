@@ -1,0 +1,17 @@
+# Configuración de Dependabot para espejo-cuantico
+version: 2
+updates:
+  - package-ecosystem: "npm" # Cambia a "yarn" si usas yarn.lock en lugar de package-lock.json
+    directory: "/"
+    schedule:
+      interval: "weekly" # Revisa actualizaciones cada semana
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+
+  - package-ecosystem: "github-actions" # También mantendrá actualizadas tus GitHub Actions
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      

@@ -23,3 +23,11 @@
 ## 2025-06-22 - Single-pass Progress Calculation
 **Learning:** Found that `MeditationEngine.calculateProgress` used multiple `reduce` passes and frequent `new Date()` allocations within the loop. This pattern increases algorithmic complexity and garbage collection pressure unnecessarily.
 **Action:** Replace multiple array iterations with a single `for...of` loop and use `Date.now()` for timestamp comparisons to achieve $O(1pass)$ performance and zero per-iteration object allocations.
+
+## 2025-06-23 - Squared Distance and Single-pass Loop Optimization
+**Learning:** Found that `ParticulasCuanticas.tsx` was performing redundant `Math.sqrt` and trigonometric calls inside a 1000-iteration `useFrame` loop. In most frames, particles are within bounds, so calculating the true distance is unnecessary.
+**Action:** Implemented squared distance checks (`nextDistSq > 64 || nextDistSq < 9`) to avoid `Math.sqrt` in the common path. Pre-calculated loop invariants and used local variables to minimize TypedArray overhead. Also refactored `MeditationEngine` to use a single-pass loop and `Date.now()`, reducing complexity from $O(2pass)$ to $O(1pass)$.
+
+## 2025-06-24 - Efficient Fixed-Size Array Updates
+**Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
+**Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
