@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Eliminate O(N) array re-indexing in fixed-size buffers
+**Learning:** Using `shift()` to maintain a fixed-size buffer forces an O(N) array re-indexing on every insert after reaching capacity.
+**Action:** Calculate the required `startIndex` dynamically (`Math.max(0, history.length - cap + 1)`) and `slice` from there, followed by `push()`. This completely avoids the `shift()` re-indexing penalty.

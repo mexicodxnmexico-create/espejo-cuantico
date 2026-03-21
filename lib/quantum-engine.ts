@@ -20,14 +20,13 @@ export const INITIAL_STATE: QuantumSystemState = {
 
 /**
  * ⚡ BOLT: Helper to update a fixed-size array efficiently.
- * While shift() is O(n), this pattern avoids double-allocation compared to [...arr, item].slice(-cap).
+ * Calculating startIndex dynamically and slicing from there eliminates the O(N) re-indexing penalty
+ * caused by using shift() when the array reaches its capacity limit.
  */
 function pushWithCap(history: string[], entry: string, cap: number = 100): string[] {
-  const newHistory = history.slice();
+  const startIndex = Math.max(0, history.length - cap + 1);
+  const newHistory = history.slice(startIndex);
   newHistory.push(entry);
-  if (newHistory.length > cap) {
-    newHistory.shift();
-  }
   return newHistory;
 }
 
