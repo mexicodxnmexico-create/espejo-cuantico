@@ -31,3 +31,11 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Internalizing Animation Logic to Prevent Parent Re-renders
+**Learning:** Frequent parent state updates (e.g., `intensidad` every 2 seconds via `setInterval`) trigger expensive re-renders of the entire 3D scene (`Canvas` and all children) in React Three Fiber.
+**Action:** Internalize high-frequency or repetitive animation logic within child components using `useRef` and `useFrame`. This allows for direct property mutation (e.g., `material.emissiveIntensity`) without reconciliation overhead.
+
+## 2025-06-26 - Decoupling O(N) Initialization from Dynamic Updates
+**Learning:** Re-calculating all particle attributes (e.g., positions, sizes) when only a subset (e.g., colors) depends on a changing prop (e.g., `frecuencia`) causes redundant O(N) overhead and visual artifacts like "jumping" particles.
+**Action:** Use separate `useMemo` hooks to decouple static or semi-static attributes from high-frequency or prop-dependent ones. This ensures that only the necessary calculations occur when specific dependencies change.

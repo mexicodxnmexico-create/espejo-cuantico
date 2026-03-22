@@ -6,13 +6,16 @@ import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean; // ⚡ BOLT: Recibe estado activo en lugar de intensidad
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+export function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+  // ⚡ BOLT: Internalizar el random walk de intensidad para evitar re-renders del padre
+  const intensidadRef = useRef(50);
+  const ultimoUpdateIntensidad = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,8 +67,9 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    // Inicializar emissiveIntensity
+    material.emissiveIntensity = intensidadRef.current / 100;
+  }, [material, colorFrecuencia]); // ⚡ BOLT: Removida dependencia de intensidad
 
   useEffect(() => {
     return () => material.dispose();
@@ -77,13 +81,20 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
 
     tiempo.current += delta;
 
+    // ⚡ BOLT: Random walk de intensidad cada 2 segundos sin disparar re-renders de React
+    if (activo && tiempo.current - ultimoUpdateIntensidad.current > 2) {
+      intensidadRef.current = Math.max(30, Math.min(70, intensidadRef.current + (Math.random() - 0.5) * 10));
+      material.emissiveIntensity = intensidadRef.current / 100;
+      ultimoUpdateIntensidad.current = tiempo.current;
+    }
+
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
     grupoRef.current.rotation.y += velocidad;
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
-    // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    // Pulsación basada en intensidad (ahora usando intensidadRef)
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidadRef.current / 200);
     grupoRef.current.scale.setScalar(escala);
   });
 
@@ -101,21 +112,17 @@ interface GeoData {
   posicion: THREE.Vector3;
 }
 
-// ⚡ OPTIMIZACIÓN: Funciones de generación de geometría memoizadas
-// ⚡ BOLT: Reusing identical geometry instances to reduce memory pressure
 function crearFlorDeLaVida(): GeoData[] {
   const geometrias: GeoData[] = [];
   const radio = 1;
   const numCirculos = 6;
   const torusGeo = new THREE.TorusGeometry(radio, 0.05, 16, 100);
 
-  // Círculo central
   geometrias.push({
     geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
-  // Círculos exteriores
   for (let i = 0; i < numCirculos; i++) {
     const angulo = (Math.PI * 2 * i) / numCirculos;
     const x = Math.cos(angulo) * radio;
@@ -127,7 +134,6 @@ function crearFlorDeLaVida(): GeoData[] {
     });
   }
 
-  // Segunda capa
   for (let i = 0; i < numCirculos; i++) {
     const angulo = (Math.PI * 2 * i) / numCirculos + Math.PI / numCirculos;
     const x = Math.cos(angulo) * radio * 1.732;
@@ -147,13 +153,11 @@ function crearMerkaba(): GeoData[] {
   const tamaño = 1.5;
   const tetraGeo = new THREE.TetrahedronGeometry(tamaño);
 
-  // Tetraedro superior
   geometrias.push({
     geometria: tetraGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
-  // Tetraedro inferior (invertido)
   geometrias.push({
     geometria: tetraGeo,
     posicion: new THREE.Vector3(0, 0, 0)
@@ -171,7 +175,6 @@ function crearCuboMetatron(): GeoData[] {
 
   const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
 
-  // Esferas en cada vértice
   vertices.forEach(([x, y, z]) => {
     geometrias.push({
       geometria: sphereGeo,
@@ -179,14 +182,12 @@ function crearCuboMetatron(): GeoData[] {
     });
   });
 
-  // Conexiones principales
   const conexiones = [
     [0, 1], [1, 2], [2, 3], [3, 0],
     [4, 5], [5, 6], [6, 7], [7, 4],
     [0, 4], [1, 5], [2, 6], [3, 7]
   ];
 
-  // Reuse a single cylinder geometry for all edges of the cube (length 2.0)
   const cylinderGeo = new THREE.CylinderGeometry(0.03, 0.03, 2, 8);
 
   conexiones.forEach(([i, j]) => {
@@ -207,13 +208,11 @@ function crearTorus(): GeoData[] {
   const geometrias: GeoData[] = [];
   const torusGeo = new THREE.TorusGeometry(1.5, 0.3, 16, 100);
 
-  // Torus principal
   geometrias.push({
     geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
-  // Torus secundario perpendicular
   geometrias.push({
     geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
