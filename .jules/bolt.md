@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2026-03-23 - [Internalizing 3D Animation State]
+**Learning:** Found that using React `useState` and `setInterval` in a parent component (`EscenaMeditacion3D.tsx`) to update 3D properties every 2 seconds was triggering expensive React reconciliation for the entire 3D tree.
+**Action:** Move fluctuating animation variables into `useRef` within the leaf 3D components and update them directly in the `useFrame` loop. This achieves 60fps visual updates with zero React re-renders.
