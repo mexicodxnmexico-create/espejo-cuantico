@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Escaping 3D Canvas Re-renders
+**Learning:** Found that interval-driven state updates in `EscenaMeditacion3D.tsx` (`intensidad`) caused massive 3D canvas re-renders because `GeometriaSagrada3D` was receiving new props every 2 seconds. While `EscenaMeditacion3D` was wrapped in `React.memo`, its internal state change was still triggering deep subtree updates inside `@react-three/fiber` components.
+**Action:** Removed interval-driven state from the parent (`EscenaMeditacion3D.tsx`) and moved the logic entirely inside `GeometriaSagrada3D.tsx` using `useRef` for tracking state and an `if`-statement inside the `useFrame` hook to control timing. The material property `emissiveIntensity` is directly mutated within the render loop to completely bypass React render cycles for these updates.
