@@ -171,6 +171,38 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+
+  await t.test('handles explicitly zero event values correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 0, gamma: 0 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('removes event listener on unmount', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
