@@ -23,12 +23,12 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  // ⚡ BOLT OPTIMIZATION: Decouple position/size initialization from color updates.
+  // This prevents O(N) re-randomization and redundant GPU uploads when frequency changes.
+  const [posiciones, tamaños, variacionesColor] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
-    const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
-
-    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+    const varCol = new Float32Array(cantidad * 3);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -41,15 +41,29 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       pos[i3 + 1] = radio * Math.sin(phi) * Math.sin(theta);
       pos[i3 + 2] = radio * Math.cos(phi);
 
-      col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
-      col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
-      col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
+      varCol[i3] = (Math.random() - 0.5) * 0.2;
+      varCol[i3 + 1] = (Math.random() - 0.5) * 0.2;
+      varCol[i3 + 2] = (Math.random() - 0.5) * 0.2;
 
       tam[i] = Math.random() * 0.05 + 0.02;
     }
 
-    return [pos, col, tam];
-  }, [cantidad, frecuencia]);
+    return [pos, tam, varCol];
+  }, [cantidad]);
+
+  const colores = useMemo(() => {
+    const col = new Float32Array(cantidad * 3);
+    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+
+    for (let i = 0; i < cantidad; i++) {
+      const i3 = i * 3;
+      col[i3] = colorBase.r + variacionesColor[i3];
+      col[i3 + 1] = colorBase.g + variacionesColor[i3 + 1];
+      col[i3 + 2] = colorBase.b + variacionesColor[i3 + 2];
+    }
+
+    return col;
+  }, [cantidad, frecuencia, variacionesColor]);
 
   useFrame((_state, delta) => {
     if (!particulasRef.current || cantidad === 0) return;
