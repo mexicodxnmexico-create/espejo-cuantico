@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2024-05-18 - Internalize 3D Animation state
+**Learning:** In React Three Fiber components that handle animations (e.g. `EscenaMeditacion3D.tsx` and `GeometriaSagrada3D.tsx`), relying on `useState` and `setInterval` in the parent component to drive periodic changes causes the entire parent (and potentially the Canvas context) to re-render, creating massive performance overhead on every tick.
+**Action:** Decouple standard non-layout animation states (like pulsing intensity) by internalizing them into child components using `useRef` and `useFrame`. Update `THREE.Material` properties directly inside `useFrame` to completely bypass the React render cycle for high-frequency animations.

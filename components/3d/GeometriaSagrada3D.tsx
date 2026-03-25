@@ -6,13 +6,17 @@ import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
+  activo: boolean;
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+export function GeometriaSagrada3D({ frecuencia, tipo, activo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+
+  // ⚡ BOLT: Internalize intensity random walk to avoid parent re-renders
+  const intensidadRef = useRef(50);
+  const tiempoIntensidadRef = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,8 +68,8 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    // emissiveIntensity is now animated in useFrame
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
@@ -76,6 +80,19 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     if (!grupoRef.current) return;
 
     tiempo.current += delta;
+    if (activo) {
+      tiempoIntensidadRef.current += delta;
+
+      // ⚡ BOLT: Internalized random walk logic for intensity every ~2 seconds
+      if (tiempoIntensidadRef.current >= 2) {
+        tiempoIntensidadRef.current = 0;
+        const nuevo = intensidadRef.current + (Math.random() - 0.5) * 10;
+        intensidadRef.current = Math.max(30, Math.min(70, nuevo));
+      }
+    }
+
+    // Update material directly to bypass React render cycle
+    material.emissiveIntensity = intensidadRef.current / 100;
 
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
@@ -83,7 +100,7 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
     // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidadRef.current / 200);
     grupoRef.current.scale.setScalar(escala);
   });
 
