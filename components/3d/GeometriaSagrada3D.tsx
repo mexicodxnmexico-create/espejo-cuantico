@@ -6,13 +6,17 @@ import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean; // ⚡ BOLT: Replaced 'intensidad: number' with 'activo: boolean' to internalize animation
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+export function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+
+  // ⚡ BOLT: Internalize intensity random walk to avoid React re-renders of the scene
+  const intensidadRef = useRef(50);
+  const ultimaActualizacionIntensidad = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,8 +68,8 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    material.emissiveIntensity = intensidadRef.current / 100;
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
@@ -77,13 +81,22 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
 
     tiempo.current += delta;
 
+    // ⚡ BOLT: Internal random walk for intensity (every 2 seconds if active)
+    if (activo && tiempo.current - ultimaActualizacionIntensidad.current > 2) {
+      intensidadRef.current = Math.max(30, Math.min(70, intensidadRef.current + (Math.random() - 0.5) * 10));
+      ultimaActualizacionIntensidad.current = tiempo.current;
+
+      // Update material directly to avoid React render cycle
+      material.emissiveIntensity = intensidadRef.current / 100;
+    }
+
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
     grupoRef.current.rotation.y += velocidad;
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
-    // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    // Pulsación basada en intensidad (ahora desde la ref)
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidadRef.current / 200);
     grupoRef.current.scale.setScalar(escala);
   });
 
