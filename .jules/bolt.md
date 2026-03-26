@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-07-20 - Internalized 3D Animation and Hook Decoupling
+**Learning:** Using parent React state (`useState` and `setInterval`) to drive high-frequency 3D animations (like the intensity oscillation in `EscenaMeditacion3D`) triggers expensive React re-renders for the entire `Canvas` subtree. Additionally, coupling independent properties like particle positions and colors in a single `useMemo` in `ParticulasCuanticas` leads to O(N) re-randomization when only one property (e.g., frequency) changes.
+**Action:** Internalize high-frequency animations within the `useFrame` loop using `useRef` to bypass the React reconciler. Decouple `useMemo` hooks to ensure O(1) stability for spatial data when non-spatial properties change. Always memoize 3D components to skip reconciliation during external UI updates.

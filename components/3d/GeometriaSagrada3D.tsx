@@ -1,33 +1,38 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+// ⚡ BOLT: Move static color mapping out of the component to avoid redundant allocations
+const COLORES_FRECUENCIA: Record<number, string> = {
+  396: "#e63946",
+  417: "#f77f00",
+  528: "#06d6a0",
+  639: "#118ab2",
+  741: "#073b4c",
+  852: "#8338ec"
+};
+
+// ⚡ BOLT: Wrap in React.memo to prevent unnecessary reconciliation when parent re-renders
+export const GeometriaSagrada3D = memo(function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
 
-  // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
+  // ⚡ BOLT: Internalize intensity animation to avoid expensive React re-renders in the 3D scene
+  const intensidadRef = useRef(50);
+  const ultimoUpdateIntensidad = useRef(0);
+
   const colorFrecuencia = useMemo(() => {
-    const colores = {
-      396: "#e63946",
-      417: "#f77f00",
-      528: "#06d6a0",
-      639: "#118ab2",
-      741: "#073b4c",
-      852: "#8338ec"
-    };
-    return colores[frecuencia as keyof typeof colores] || "#06d6a0";
+    return COLORES_FRECUENCIA[frecuencia] || "#06d6a0";
   }, [frecuencia]);
 
-  // ⚡ OPTIMIZACIÓN: Crear geometrías complejas solo una vez
   const geometrias = useMemo(() => {
     if (tipo === "flor-vida") {
       return crearFlorDeLaVida();
@@ -40,7 +45,6 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     }
   }, [tipo]);
 
-  // ⚡ BOLT: Dispose geometries to prevent GPU memory leaks
   useEffect(() => {
     return () => {
       const seen = new Set<THREE.BufferGeometry>();
@@ -53,7 +57,6 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     };
   }, [geometrias]);
 
-  // ⚡ BOLT: Memoize a single material and update it to avoid redundant allocations
   const material = useMemo(() => new THREE.MeshStandardMaterial({
     metalness: 0.8,
     roughness: 0.2,
@@ -61,28 +64,36 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     opacity: 0.8,
   }), []);
 
+  // Update color when frequency changes
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
   }, [material]);
 
-  // Animación continua
   useFrame((_state, delta) => {
     if (!grupoRef.current) return;
 
     tiempo.current += delta;
 
-    // Rotación suave basada en la frecuencia
+    // ⚡ BOLT: Random walk for intensity every 2 seconds, handled inside the loop
+    if (activo && (tiempo.current - ultimoUpdateIntensidad.current > 2)) {
+      intensidadRef.current = Math.max(30, Math.min(70, intensidadRef.current + (Math.random() - 0.5) * 10));
+      ultimoUpdateIntensidad.current = tiempo.current;
+    }
+
+    const intensidad = intensidadRef.current;
+
+    // Direct material update avoids React reconciliation
+    material.emissiveIntensity = intensidad / 100;
+
     const velocidad = frecuencia / 10000;
     grupoRef.current.rotation.y += velocidad;
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
-    // Pulsación basada en intensidad
     const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
     grupoRef.current.scale.setScalar(escala);
   });
@@ -94,28 +105,24 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
       ))}
     </group>
   );
-}
+});
 
 interface GeoData {
   geometria: THREE.BufferGeometry;
   posicion: THREE.Vector3;
 }
 
-// ⚡ OPTIMIZACIÓN: Funciones de generación de geometría memoizadas
-// ⚡ BOLT: Reusing identical geometry instances to reduce memory pressure
 function crearFlorDeLaVida(): GeoData[] {
   const geometrias: GeoData[] = [];
   const radio = 1;
   const numCirculos = 6;
   const torusGeo = new THREE.TorusGeometry(radio, 0.05, 16, 100);
 
-  // Círculo central
   geometrias.push({
     geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
-  // Círculos exteriores
   for (let i = 0; i < numCirculos; i++) {
     const angulo = (Math.PI * 2 * i) / numCirculos;
     const x = Math.cos(angulo) * radio;
@@ -127,7 +134,6 @@ function crearFlorDeLaVida(): GeoData[] {
     });
   }
 
-  // Segunda capa
   for (let i = 0; i < numCirculos; i++) {
     const angulo = (Math.PI * 2 * i) / numCirculos + Math.PI / numCirculos;
     const x = Math.cos(angulo) * radio * 1.732;
@@ -147,13 +153,11 @@ function crearMerkaba(): GeoData[] {
   const tamaño = 1.5;
   const tetraGeo = new THREE.TetrahedronGeometry(tamaño);
 
-  // Tetraedro superior
   geometrias.push({
     geometria: tetraGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
-  // Tetraedro inferior (invertido)
   geometrias.push({
     geometria: tetraGeo,
     posicion: new THREE.Vector3(0, 0, 0)
@@ -171,7 +175,6 @@ function crearCuboMetatron(): GeoData[] {
 
   const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
 
-  // Esferas en cada vértice
   vertices.forEach(([x, y, z]) => {
     geometrias.push({
       geometria: sphereGeo,
@@ -179,14 +182,12 @@ function crearCuboMetatron(): GeoData[] {
     });
   });
 
-  // Conexiones principales
   const conexiones = [
     [0, 1], [1, 2], [2, 3], [3, 0],
     [4, 5], [5, 6], [6, 7], [7, 4],
     [0, 4], [1, 5], [2, 6], [3, 7]
   ];
 
-  // Reuse a single cylinder geometry for all edges of the cube (length 2.0)
   const cylinderGeo = new THREE.CylinderGeometry(0.03, 0.03, 2, 8);
 
   conexiones.forEach(([i, j]) => {
@@ -207,13 +208,11 @@ function crearTorus(): GeoData[] {
   const geometrias: GeoData[] = [];
   const torusGeo = new THREE.TorusGeometry(1.5, 0.3, 16, 100);
 
-  // Torus principal
   geometrias.push({
     geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
   });
 
-  // Torus secundario perpendicular
   geometrias.push({
     geometria: torusGeo,
     posicion: new THREE.Vector3(0, 0, 0)
