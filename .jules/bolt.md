@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Decoupling Geometry from Frequency State
+**Learning:** Found that modifying the audio frequency in `MeditacionAudioVisual3D` triggered an expensive re-render of `ParticulasCuanticas.tsx`, forcing a recalculation of 3000 random initial particle positions and sizes within a single `useMemo` block. This caused layout thrashing and a visual "jump" every time the user changed the frequency, despite the static structure of the particles.
+**Action:** Decoupled static geometry initialization (positions and sizes) from frequency-dependent properties (colors) via separate `useMemo` hooks. This ensures `O(1)` positional updates and prevents expensive `Math.random()` and trigonometric calculations during simple color state changes.
