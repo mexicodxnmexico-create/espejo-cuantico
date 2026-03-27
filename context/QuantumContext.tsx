@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { QuantumSystemState, INITIAL_STATE, QuantumEngine } from "@/lib/quantum-engine";
+import { QuantumSystemState, INITIAL_STATE, QuantumEngine, isValidQuantumState } from "@/lib/quantum-engine";
 
 interface QuantumContextType {
   state: QuantumSystemState;
@@ -25,7 +25,13 @@ export function QuantumProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem("quantum_state_v2");
       if (saved) {
-        setState(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (isValidQuantumState(parsed)) {
+          setState(parsed);
+        } else {
+          console.error("Invalid quantum state in localStorage, falling back to initial state.");
+          localStorage.removeItem("quantum_state_v2");
+        }
       }
     } catch (e) {
       console.error("Failed to parse quantum state", e);
