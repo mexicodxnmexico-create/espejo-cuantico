@@ -23,16 +23,14 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  // ⚡ BOLT: Decouple static geometry (positions/sizes) from frequency-dependent colors
+  // This prevents O(N) re-randomization and layout thrashing when only the frequency changes
+  const [posiciones, tamaños] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
-    const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
-
-    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
-
       const radio = Math.random() * 5 + 3;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
@@ -41,14 +39,24 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       pos[i3 + 1] = radio * Math.sin(phi) * Math.sin(theta);
       pos[i3 + 2] = radio * Math.cos(phi);
 
-      col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
-      col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
-      col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
-
       tam[i] = Math.random() * 0.05 + 0.02;
     }
 
-    return [pos, col, tam];
+    return [pos, tam];
+  }, [cantidad]);
+
+  const colores = useMemo(() => {
+    const col = new Float32Array(cantidad * 3);
+    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+
+    for (let i = 0; i < cantidad; i++) {
+      const i3 = i * 3;
+      col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
+      col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
+      col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
+    }
+
+    return col;
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
