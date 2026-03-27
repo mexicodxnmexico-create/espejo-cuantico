@@ -1,0 +1,42 @@
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 517ms
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following mandatory changes were made to your tsconfig.json:
+
+	- jsx was set to react-jsx (next.js uses the React automatic runtime)
+
+
+ GET / 200 in 616ms (next.js: 274ms, application-code: 342ms)
+ GET / 200 in 84ms (next.js: 11ms, application-code: 73ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:267:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 61ms (next.js: 8ms, application-code: 53ms)
+ GET / 200 in 52ms (next.js: 3ms, application-code: 49ms)
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:267:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
