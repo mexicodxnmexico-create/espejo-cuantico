@@ -146,10 +146,10 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           borderRadius: "12px",
           border: "1px solid #eaeaea"
         }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+          <label htmlFor="frecuencia" style={{ display: "block", fontWeight: "bold", fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
             Frecuencia Solfeggio
-          </h3>
-          <select
+          </label>
+          <select id="frecuencia"
             value={frecuenciaSeleccionada}
             onChange={(e) => setFrecuenciaSeleccionada(Number(e.target.value))}
             disabled={activo}
@@ -176,10 +176,10 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           borderRadius: "12px",
           border: "1px solid #eaeaea"
         }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+          <label htmlFor="geometria" style={{ display: "block", fontWeight: "bold", fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
             Geometría Sagrada
-          </h3>
-          <select
+          </label>
+          <select id="geometria"
             value={geometriaSeleccionada}
             onChange={(e) => setGeometriaSeleccionada(e.target.value as any)}
             disabled={activo}
@@ -206,10 +206,10 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           borderRadius: "12px",
           border: "1px solid #eaeaea"
         }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+          <label htmlFor="duracion" style={{ display: "block", fontWeight: "bold", fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
             Duración (minutos)
-          </h3>
-          <input
+          </label>
+          <input id="duracion"
             type="number"
             min="1"
             max="60"

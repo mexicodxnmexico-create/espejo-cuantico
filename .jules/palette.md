@@ -13,3 +13,7 @@
 ## 2025-03-15 - Critical Error State Accessibility
 **Learning:** When a system enters a critical error or collapsed state that disables primary UI interactions, simply rendering the state is insufficient. It requires 'role="alert"' to announce the critical state and explicit focus shifting (via 'autoFocus' or 'useEffect' with 'useRef') to the primary recovery action to maintain accessibility.
 **Action:** Always add 'role="alert"' to error containers and explicitly shift focus to the recovery button or primary text when a disruptive error state mounts.
+
+## 2024-05-18 - Semantic labels for accessibility
+**Learning:** Using `<h3>` (or other heading elements) as makeshift labels for form controls creates accessibility issues because screen readers cannot properly associate the label text with the form input.
+**Action:** Always use semantic `<label>` tags with a `htmlFor` attribute that strictly matches the `id` of the corresponding `<input>`, `<select>`, or `<textarea>`. To preserve visual parity from previous heading usage, utilize inline styles like `display: "block"` and matching font weights.
