@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-07-15 - Internalizing 3D Animation State in useFrame
+**Learning:** Managing rapidly changing animation variables (like a random walk for light intensity) in parent React state causes the entire 3D scene (including the Canvas and all its children) to re-render via the React reconciliation cycle. This is extremely expensive in R3F.
+**Action:** Internalize such variables in the leaf component using `useRef` and perform updates directly on the Three.js objects (e.g., `material.emissiveIntensity`) within the `useFrame` loop. Use `state.clock.elapsedTime` to throttle updates, bypassing React re-renders entirely for frame-by-frame visual changes.
