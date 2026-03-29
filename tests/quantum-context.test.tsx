@@ -28,16 +28,22 @@ test('QuantumContext test suite', async (t) => {
 
     // Provide a mock window object to avoid "Cannot read properties of undefined (reading 'addEventListener')"
     // when the unloading hook runs.
-    (global as unknown as { window: unknown }).window = {
-      addEventListener: () => {},
-      removeEventListener: () => {}
-    };
+    Object.defineProperty(global, 'window', {
+      value: {
+        addEventListener: () => {},
+        removeEventListener: () => {}
+      },
+      configurable: true
+    });
   });
 
   t.afterEach(() => {
     console.error = originalConsoleError;
     global.localStorage = originalLocalStorage;
-    (global as unknown as { window: unknown }).window = originalWindow;
+    Object.defineProperty(global, 'window', {
+      value: originalWindow,
+      configurable: true
+    });
     loggedError = null;
   });
 
