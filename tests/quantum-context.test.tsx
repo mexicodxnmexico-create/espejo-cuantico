@@ -15,8 +15,9 @@ function TestComponent() {
 test('QuantumContext test suite', async (t) => {
   const originalConsoleError = console.error;
   let loggedError: unknown = null;
-  const originalLocalStorage = global.localStorage;
-  const originalWindow = global.window;
+  // Store original globals to restore later
+  const originalLocalStorage = (global as unknown as { localStorage: Storage }).localStorage;
+  const originalWindow = (global as unknown as { window: Window }).window;
 
   t.beforeEach(() => {
     loggedError = null;
@@ -28,29 +29,42 @@ test('QuantumContext test suite', async (t) => {
 
     // Provide a mock window object to avoid "Cannot read properties of undefined (reading 'addEventListener')"
     // when the unloading hook runs.
-    (global as unknown as { window: unknown }).window = {
-      addEventListener: () => {},
-      removeEventListener: () => {}
-    };
+    Object.defineProperty(global, 'window', {
+      value: {
+        addEventListener: () => {},
+        removeEventListener: () => {}
+      },
+      configurable: true
+    });
   });
 
   t.afterEach(() => {
     console.error = originalConsoleError;
-    global.localStorage = originalLocalStorage;
-    (global as unknown as { window: unknown }).window = originalWindow;
+    Object.defineProperty(global, 'localStorage', {
+      value: originalLocalStorage,
+      configurable: true
+    });
+    Object.defineProperty(global, 'window', {
+      value: originalWindow,
+      configurable: true
+    });
     loggedError = null;
   });
 
   await t.test('handles localStorage getItem error gracefully', () => {
     const err = new Error('Simulated localStorage access error');
-    global.localStorage = {
-      getItem: () => { throw err; },
-      setItem: () => {},
-      removeItem: () => {},
-      clear: () => {},
-      length: 0,
-      key: () => null
-    } as unknown as Storage;
+
+    Object.defineProperty(global, 'localStorage', {
+      value: {
+        getItem: () => { throw err; },
+        setItem: () => {},
+        removeItem: () => {},
+        clear: () => {},
+        length: 0,
+        key: () => null
+      },
+      configurable: true
+    });
 
     let root: TestRenderer.ReactTestRenderer | undefined;
 
@@ -78,14 +92,17 @@ test('QuantumContext test suite', async (t) => {
 
   await t.test('handles localStorage setItem error gracefully on timer', async () => {
     // This tests the setItem logic in the 500ms timeout
-    global.localStorage = {
-      getItem: () => JSON.stringify(INITIAL_STATE),
-      setItem: () => { throw new Error('Quota exceeded'); },
-      removeItem: () => {},
-      clear: () => {},
-      length: 0,
-      key: () => null
-    } as unknown as Storage;
+    Object.defineProperty(global, 'localStorage', {
+      value: {
+        getItem: () => JSON.stringify(INITIAL_STATE),
+        setItem: () => { throw new Error('Quota exceeded'); },
+        removeItem: () => {},
+        clear: () => {},
+        length: 0,
+        key: () => null
+      },
+      configurable: true
+    });
 
     let root: TestRenderer.ReactTestRenderer | undefined;
 
