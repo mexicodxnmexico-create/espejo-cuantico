@@ -171,6 +171,51 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+
+  await t.test('explicitly handles zero values for all axes', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    // First transition to a non-zero state to ensure we are actually testing a state change to 0
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach((listener: Function) => {
+          listener({ alpha: 10, beta: 10, gamma: 10 });
+        });
+      }
+    });
+
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '10');
+    assert.strictEqual(gammaDiv.children[0], '10');
+
+    // Now dispatch 0 values to test fallback logic e.g. e.alpha || 0
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach((listener: Function) => {
+          listener({ alpha: 0, beta: 0, gamma: 0 });
+        });
+      }
+    });
+
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('removes event listener on unmount', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
