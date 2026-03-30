@@ -13,3 +13,7 @@
 ## 2025-03-15 - Critical Error State Accessibility
 **Learning:** When a system enters a critical error or collapsed state that disables primary UI interactions, simply rendering the state is insufficient. It requires 'role="alert"' to announce the critical state and explicit focus shifting (via 'autoFocus' or 'useEffect' with 'useRef') to the primary recovery action to maintain accessibility.
 **Action:** Always add 'role="alert"' to error containers and explicitly shift focus to the recovery button or primary text when a disruptive error state mounts.
+
+## 2024-05-18 - Replacing makeshift heading labels with semantic `<label>` tags
+**Learning:** In React components replacing makeshift headings (e.g. `<h3>`) acting as form labels with actual `<label>` tags requires maintaining their structural flow properties to avoid layout shifts.
+**Action:** Always add `display: "block"` and `fontWeight: "bold"` to `<label>` tags in this codebase if replacing headings without dedicated CSS classes.
