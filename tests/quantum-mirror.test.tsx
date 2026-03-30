@@ -146,7 +146,28 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
-    // Dispatch mock deviceorientation event with null/undefined values
+    // First, set non-zero values to ensure state transitions occur
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 20, gamma: 30 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    // 432 + Math.round(20 / 10) = 434
+    assert.strictEqual(freqDiv.children[0], '434');
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '20');
+    assert.strictEqual(gammaDiv.children[0], '30');
+
+    // Dispatch mock deviceorientation event with null values
     TestRenderer.act(() => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
@@ -156,10 +177,35 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       }
     });
 
-    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
-    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
-    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
-    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    // Dispatch mock deviceorientation event with undefined values
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: undefined, beta: undefined, gamma: undefined });
+        });
+      }
+    });
+
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    // Dispatch mock deviceorientation event with explicit 0 values
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 0, gamma: 0 });
+        });
+      }
+    });
 
     assert.strictEqual(freqDiv.children[0], '432');
     assert.strictEqual(alphaDiv.children[0], '0');
