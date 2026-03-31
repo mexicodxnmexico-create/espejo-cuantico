@@ -91,6 +91,7 @@ test('QuantumMirror deviceorientation logic', async (t) => {
   });
 
 
+  // Ensures branch coverage for e.beta = 0 and negative values
   await t.test('handles negative and zero beta values correctly', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
@@ -133,6 +134,47 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(alphaDiv.children[0], '20');
     assert.strictEqual(betaDiv.children[0], '0');
     assert.strictEqual(gammaDiv.children[0], '20');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
+  await t.test('handles fractional beta values correctly with Math.round', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 45.6, gamma: 20 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    // 432 + Math.round(45.6 / 10) = 432 + Math.round(4.56) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+    assert.strictEqual(betaDiv.children[0], '45.6');
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 44.4, gamma: 20 });
+        });
+      }
+    });
+
+    // 432 + Math.round(44.4 / 10) = 432 + Math.round(4.44) = 432 + 4 = 436
+    assert.strictEqual(freqDiv.children[0], '436');
+    assert.strictEqual(betaDiv.children[0], '44.4');
 
     TestRenderer.act(() => {
       root!.unmount();
