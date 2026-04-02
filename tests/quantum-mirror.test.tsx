@@ -171,6 +171,79 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional beta values and rounds correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Dispatch mock deviceorientation event with fractional beta that rounds up
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 45.6, gamma: 10 });
+        });
+      }
+    });
+
+    let freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+
+    // 432 + Math.round(45.6 / 10) = 432 + Math.round(4.56) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+
+    // Dispatch another event with fractional beta that rounds down
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 44.4, gamma: 10 });
+        });
+      }
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+
+    // 432 + Math.round(44.4 / 10) = 432 + Math.round(4.44) = 432 + 4 = 436
+    assert.strictEqual(freqDiv.children[0], '436');
+
+    // Dispatch another event with negative fractional beta that rounds up (towards 0)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: -44.4, gamma: 10 });
+        });
+      }
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+
+    // 432 + Math.round(-44.4 / 10) = 432 + Math.round(-4.44) = 432 - 4 = 428
+    assert.strictEqual(freqDiv.children[0], '428');
+
+    // Dispatch another event with negative fractional beta that rounds down (away from 0)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: -45.5, gamma: 10 });
+        });
+      }
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+
+    // 432 + Math.round(-45.5 / 10) = 432 + Math.round(-4.55) = 432 - 5 = 427
+    // NOTE: Math.round(-4.5) is -4, but Math.round(-4.55) is -5.
+    assert.strictEqual(freqDiv.children[0], '427');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('removes event listener on unmount', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
