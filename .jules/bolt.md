@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - React re-renders and R3F animations
+**Learning:** Using `useState` and `setInterval` in a parent component (like `EscenaMeditacion3D.tsx`) to update variables that drive constant 3D animation (like intensity) forces the entire React component tree for the 3D scene to re-render constantly. This is a severe performance bottleneck.
+**Action:** Internalize the logic within the child component that renders the 3D objects using `useRef` and `useFrame`. Directly update the material attributes (`material.emissiveIntensity` or `mesh.scale`) instead of relying on React state to trigger the updates, bypassing the React reconciliation cycle entirely. Also ensure parent canvas wrappers are memoized (`React.memo`).
