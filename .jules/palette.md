@@ -13,3 +13,7 @@
 ## 2025-03-15 - Critical Error State Accessibility
 **Learning:** When a system enters a critical error or collapsed state that disables primary UI interactions, simply rendering the state is insufficient. It requires 'role="alert"' to announce the critical state and explicit focus shifting (via 'autoFocus' or 'useEffect' with 'useRef') to the primary recovery action to maintain accessibility.
 **Action:** Always add 'role="alert"' to error containers and explicitly shift focus to the recovery button or primary text when a disruptive error state mounts.
+
+## 2026-04-02 - Form Label Accessibility
+**Learning:** Using block-level headings (like '<h3>') visually positioned above form inputs fails screen reader association.
+**Action:** Always replace visual heading tags for form fields with semantic '<label>' elements. To preserve the original stacked visual design without altering CSS layouts, apply 'display: "block"' and 'fontWeight: "bold"' to the label directly, and link it via 'htmlFor' and 'id'.
