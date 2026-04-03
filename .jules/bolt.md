@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2026-04-03 - Internalize High-Frequency React State to Three.js useFrame
+**Learning:** Found that updating state like `intensidad` via `useState` and `setInterval` in a parent component (`EscenaMeditacion3D`) forces expensive and unnecessary re-renders of the entire 3D component tree every 2 seconds.
+**Action:** Internalize the logic using `useRef` within the child component's (`GeometriaSagrada3D`) `useFrame` loop. This throttles updates based on `_state.clock.elapsedTime` and applies the values directly to the Three.js materials/meshes, bypassing React's reconciliation cycle entirely for the animation.
