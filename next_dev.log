@@ -1,0 +1,127 @@
+
+> espejo-cuantico@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 818ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following mandatory changes were made to your tsconfig.json:
+
+	- jsx was set to react-jsx (next.js uses the React automatic runtime)
+
+
+ GET / 200 in 3.7s (next.js: 3.0s, application-code: 671ms)
+ GET / 200 in 70ms (next.js: 4ms, application-code: 66ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 57ms (next.js: 4ms, application-code: 53ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 63ms (next.js: 4ms, application-code: 59ms)
+ GET / 200 in 57ms (next.js: 4ms, application-code: 53ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 56ms (next.js: 5ms, application-code: 51ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 65ms (next.js: 3ms, application-code: 62ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 51ms (next.js: 3ms, application-code: 47ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
+ GET / 200 in 66ms (next.js: 5ms, application-code: 60ms)
+[browser] Removing a style property during rerender (borderColor) when a conflicting property is set (border) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values.
+[browser] Uncaught TypeError: Cannot read properties of undefined (reading 'ReactCurrentOwner')
+    at module evaluation (components/3d/EscenaMeditacion3D.tsx:3:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:4:1)
+    at module evaluation (components/meditacion/MeditacionAudioVisual3D.tsx:270:1)
+    at <unknown> (.next/dev/static/chunks/components_meditacion_MeditacionAudioVisual3D_tsx_0--idxd._.js:16:16)
+    at Home (app/page.tsx:107:11)
+  1 | "use client";
+  2 |
+> 3 | import { Canvas } from "@react-three/fiber";
+    | ^
+  4 | import { OrbitControls, Stars, Environment } from "@react-three/drei";
+  5 | import { Suspense, useState, useEffect, memo } from "react";
+  6 | import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
