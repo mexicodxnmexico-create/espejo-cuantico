@@ -139,6 +139,55 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles rounding logic for fractional beta values correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Test rounding down: 44 / 10 = 4.4 -> rounds to 4
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 44, gamma: 10 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    // 432 + Math.round(44 / 10) = 432 + 4 = 436
+    assert.strictEqual(freqDiv.children[0], '436');
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '44');
+    assert.strictEqual(gammaDiv.children[0], '10');
+
+    // Test rounding up: 46 / 10 = 4.6 -> rounds to 5
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 20, beta: 46, gamma: 20 });
+        });
+      }
+    });
+
+    // 432 + Math.round(46 / 10) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+    assert.strictEqual(alphaDiv.children[0], '20');
+    assert.strictEqual(betaDiv.children[0], '46');
+    assert.strictEqual(gammaDiv.children[0], '20');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
