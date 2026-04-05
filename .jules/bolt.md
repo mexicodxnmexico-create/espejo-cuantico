@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - React Three Fiber Render Optimization
+**Learning:** Found that `EscenaMeditacion3D.tsx` was using `setInterval` and `useState` to update a visual `intensidad` property every 2 seconds. This triggered a full React state reconciliation on the entire 3D component and the `<Canvas>` wrapper. In high-frequency 3D applications, standard React state is too slow and causes massive re-render overhead.
+**Action:** Migrate high-frequency or timing-based visual state (like animation pulses or intensity changes) into `useRef` inside the `useFrame` hook provided by React Three Fiber. Mutate the Three.js objects (e.g., `material.emissiveIntensity`) directly inside `useFrame` using a time delta to achieve zero-overhead visual updates that bypass React completely.
