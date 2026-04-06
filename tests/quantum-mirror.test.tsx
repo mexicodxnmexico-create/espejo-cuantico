@@ -139,6 +139,51 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional beta values with rounding', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Test rounding down
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 44.9, gamma: 10 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    // 432 + Math.round(44.9 / 10) = 432 + 4 = 436
+    assert.strictEqual(freqDiv.children[0], '436');
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '44.9');
+
+    // Test rounding up
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 45.1, gamma: 10 });
+        });
+      }
+    });
+
+    // 432 + Math.round(45.1 / 10) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+    assert.strictEqual(betaDiv.children[0], '45.1');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
