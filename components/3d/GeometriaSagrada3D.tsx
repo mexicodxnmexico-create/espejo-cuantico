@@ -1,18 +1,22 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+// ⚡ BOLT: Wrap in React.memo to prevent parent re-renders from triggering
+// unnecessary React reconciliation of the 3D scene.
+export const GeometriaSagrada3D = memo(function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+  const intensidad = useRef(50);
+  const lastIntensidadUpdate = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,18 +68,28 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    // ⚡ BOLT: Emissive intensity is now updated in useFrame to bypass React renders.
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
   }, [material]);
 
   // Animación continua
-  useFrame((_state, delta) => {
+  useFrame((state, delta) => {
     if (!grupoRef.current) return;
 
     tiempo.current += delta;
+
+    // ⚡ BOLT: Internalized intensity fluctuation to bypass React re-renders.
+    // Logic previously resided in the parent EscenaMeditacion3D with a 2s interval.
+    if (activo) {
+      const elapsed = state.clock.elapsedTime;
+      if (elapsed - lastIntensidadUpdate.current > 2) {
+        intensidad.current = Math.max(30, Math.min(70, intensidad.current + (Math.random() - 0.5) * 10));
+        lastIntensidadUpdate.current = elapsed;
+      }
+    }
 
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
@@ -83,7 +97,9 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
     // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    // ⚡ BOLT: Apply intensity directly to material and scale to avoid React scheduling.
+    material.emissiveIntensity = intensidad.current / 100;
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad.current / 200);
     grupoRef.current.scale.setScalar(escala);
   });
 
@@ -94,7 +110,14 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
       ))}
     </group>
   );
-}
+});
+
+GeometriaSagrada3D.displayName = "GeometriaSagrada3D";
+
+// ⚡ BOLT: Module-level scratch objects to avoid per-frame/per-loop allocations.
+const _v1 = new THREE.Vector3();
+const _v2 = new THREE.Vector3();
+const _v3 = new THREE.Vector3();
 
 interface GeoData {
   geometria: THREE.BufferGeometry;
@@ -190,13 +213,14 @@ function crearCuboMetatron(): GeoData[] {
   const cylinderGeo = new THREE.CylinderGeometry(0.03, 0.03, 2, 8);
 
   conexiones.forEach(([i, j]) => {
-    const inicio = new THREE.Vector3(...vertices[i]);
-    const fin = new THREE.Vector3(...vertices[j]);
-    const direccion = new THREE.Vector3().subVectors(fin, inicio);
+    // ⚡ BOLT: Using scratch vectors to avoid allocations within the loop.
+    const v_start = _v1.fromArray(vertices[i]);
+    const v_end = _v2.fromArray(vertices[j]);
+    const v_dir = _v3.subVectors(v_end, v_start);
 
     geometrias.push({
       geometria: cylinderGeo,
-      posicion: inicio.clone().add(direccion.multiplyScalar(0.5))
+      posicion: v_start.clone().add(v_dir.multiplyScalar(0.5))
     });
   });
 
