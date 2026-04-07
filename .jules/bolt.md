@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-07-01 - R3F useFrame instead of setInterval State Updates
+**Learning:** Found that `EscenaMeditacion3D` was using `setInterval` to update a React state (`intensidad`) every 2 seconds. This caused the entire Canvas to be re-rendered periodically by the React Reconciler, which is a massive performance killer in React Three Fiber apps.
+**Action:** Move rapidly changing values into `useRef` inside the inner 3D component (`GeometriaSagrada3D`) and calculate updates entirely within the `useFrame` loop using `_state.clock.elapsedTime` for throttling. Update `material` and `mesh` properties directly. This provides a 100% reduction in React re-renders for the 3D scene while maintaining the exact visual effect.
