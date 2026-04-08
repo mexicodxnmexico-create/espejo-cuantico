@@ -94,4 +94,20 @@ test('QuantumEngine transitions', async (t) => {
         assert.strictEqual(newState.history.length, 1);
         assert.strictEqual(newState.history[0], 'Sistema reiniciado manualmente.');
     });
+
+    await t.test('OBSERVE - triggers ENTANGLED phase when entropy > 50', () => {
+        const initialState: QuantumSystemState = {
+            ...INITIAL_STATE,
+            coherence: 100,
+            entropy: 49,
+            phase: 'IDLE',
+            reflectionCount: 0,
+        };
+
+        const newState = QuantumEngine.transition(initialState, 'OBSERVE');
+
+        assert.strictEqual(newState.phase, 'ENTANGLED');
+        assert.strictEqual(newState.entropy, 51); // 49 + 2
+        assert.strictEqual(newState.coherence, 99); // 100 - 1
+    });
 });
