@@ -139,6 +139,68 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional values correctly for rounding logic', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Test positive fractional value that rounds up
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 25.5, gamma: 10 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    // 432 + Math.round(25.5 / 10) = 432 + Math.round(2.55) = 432 + 3 = 435
+    assert.strictEqual(freqDiv.children[0], '435');
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '25.5');
+    assert.strictEqual(gammaDiv.children[0], '10');
+
+    // Test negative fractional value that rounds down
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: -25.5, gamma: 10 });
+        });
+      }
+    });
+
+    // 432 + Math.round(-25.5 / 10) = 432 + Math.round(-2.55) = 432 - 3 = 429
+    assert.strictEqual(freqDiv.children[0], '429');
+    assert.strictEqual(alphaDiv.children[0], '10');
+    assert.strictEqual(betaDiv.children[0], '-25.5');
+    assert.strictEqual(gammaDiv.children[0], '10');
+
+    // Test fractional value that rounds towards 0
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 22.1, gamma: 10 });
+        });
+      }
+    });
+
+    // 432 + Math.round(22.1 / 10) = 432 + Math.round(2.21) = 432 + 2 = 434
+    assert.strictEqual(freqDiv.children[0], '434');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
