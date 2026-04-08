@@ -75,25 +75,44 @@ export const Onboarding = memo(function Onboarding({ onComplete }: { onComplete:
           Paso {step + 1} de {steps.length}
         </div>
 
-        <button
-          onClick={() => {
-            if (step === steps.length - 1) {
-              onComplete();
-            }
-            setStep(s => s + 1);
-          }}
-          style={{
-            padding: "0.75rem 2rem",
-            backgroundColor: "#000",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "bold"
-          }}
-        >
-          {step === steps.length - 1 ? "Entrar al Espejo" : "Siguiente"}
-        </button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+          {step < steps.length - 1 && (
+            <button
+              onClick={onComplete}
+              style={{
+                padding: "0.75rem 2rem",
+                backgroundColor: "transparent",
+                color: "#555",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
+            >
+              Saltar
+            </button>
+          )}
+          <button
+            onClick={() => {
+              if (step === steps.length - 1) {
+                onComplete();
+              } else {
+                setStep(s => s + 1);
+              }
+            }}
+            style={{
+              padding: "0.75rem 2rem",
+              backgroundColor: "#000",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold"
+            }}
+          >
+            {step === steps.length - 1 ? "Entrar al Espejo" : "Siguiente"}
+          </button>
+        </div>
       </div>
     </div>
   );

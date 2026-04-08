@@ -13,3 +13,7 @@
 ## 2025-03-15 - Critical Error State Accessibility
 **Learning:** When a system enters a critical error or collapsed state that disables primary UI interactions, simply rendering the state is insufficient. It requires 'role="alert"' to announce the critical state and explicit focus shifting (via 'autoFocus' or 'useEffect' with 'useRef') to the primary recovery action to maintain accessibility.
 **Action:** Always add 'role="alert"' to error containers and explicitly shift focus to the recovery button or primary text when a disruptive error state mounts.
+
+## 2024-04-08 - Added "Skip" button to multi-step onboarding
+**Learning:** The multi-step modal (`components/Onboarding.tsx`) forced users to click "Siguiente" multiple times before allowing interaction with the main app. This creates friction for returning users whose `localStorage` state was cleared, or for power users who want to explore the interface immediately.
+**Action:** When implementing multi-step tutorials or modals, always provide a clear, secondary "Skip" or "Saltar" action alongside the primary "Next" action, ensuring users maintain control over their navigation flow.
