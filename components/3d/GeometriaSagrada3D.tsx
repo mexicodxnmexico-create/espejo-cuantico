@@ -1,18 +1,23 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+// ⚡ BOLT: Internalize animation state (intensity) into a useRef to bypass React reconciliation.
+// Updating high-frequency animation properties (emissiveIntensity, scale) directly in useFrame
+// avoids triggering a full component re-render every second from the parent.
+export const GeometriaSagrada3D = memo(function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+  const intensidad = useRef(50);
+  const ultimoUpdateIntensidad = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,26 +69,42 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    material.emissiveIntensity = intensidad.current / 100;
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
   }, [material]);
 
   // Animación continua
-  useFrame((_state, delta) => {
+  useFrame((state, delta) => {
     if (!grupoRef.current) return;
 
+    const t = state.clock.elapsedTime;
     tiempo.current += delta;
+
+    // ⚡ BOLT: Update intensity random walk logic inside frame loop (every 2 seconds)
+    // if active, without triggering React re-renders.
+    if (activo && t - ultimoUpdateIntensidad.current > 2) {
+      const nuevo = intensidad.current + (Math.random() - 0.5) * 10;
+      intensidad.current = Math.max(30, Math.min(70, nuevo));
+      ultimoUpdateIntensidad.current = t;
+
+      // Update material property directly
+      material.emissiveIntensity = intensidad.current / 100;
+    } else if (!activo) {
+      // Reset intensity if not active
+      intensidad.current = 50;
+      material.emissiveIntensity = 0.5;
+    }
 
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
     grupoRef.current.rotation.y += velocidad;
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
-    // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    // Pulsación basada en intensidad (updated directly in frame loop)
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad.current / 200);
     grupoRef.current.scale.setScalar(escala);
   });
 
@@ -94,7 +115,7 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
       ))}
     </group>
   );
-}
+});
 
 interface GeoData {
   geometria: THREE.BufferGeometry;
