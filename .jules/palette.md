@@ -13,3 +13,7 @@
 ## 2025-03-15 - Critical Error State Accessibility
 **Learning:** When a system enters a critical error or collapsed state that disables primary UI interactions, simply rendering the state is insufficient. It requires 'role="alert"' to announce the critical state and explicit focus shifting (via 'autoFocus' or 'useEffect' with 'useRef') to the primary recovery action to maintain accessibility.
 **Action:** Always add 'role="alert"' to error containers and explicitly shift focus to the recovery button or primary text when a disruptive error state mounts.
+
+## 2024-05-24 - Dynamic Insight Accessibility
+**Learning:** Dynamic text regions that update without page reloads (like reflection count insights) need explicit 'role="status"' and 'aria-live="polite"' to ensure screen readers announce the changes seamlessly as they happen.
+**Action:** Always add 'role="status"' and 'aria-live="polite"' to containers with text that updates based on user interaction or state changes.
