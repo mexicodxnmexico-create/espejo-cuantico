@@ -23,25 +23,30 @@ const GEOMETRIAS = [
   { id: "torus" as const, nombre: "Torus Energético" }
 ];
 
-export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ onCompletarMeditacion }: Props) {
-  const [activo, setActivo] = useState(false);
-  const [frecuenciaSeleccionada, setFrecuenciaSeleccionada] = useState(528);
-  const [geometriaSeleccionada, setGeometriaSeleccionada] = useState<"flor-vida" | "merkaba" | "metatron" | "torus">("flor-vida");
-  const [duracion, setDuracion] = useState(10);
-  const [tiempoRestante, setTiempoRestante] = useState(0);
-
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+// ⚡ BOLT: Extract timer into a leaf component to isolate 1-second re-renders.
+// This prevents the parent MeditacionAudioVisual3D and its expensive 3D canvas
+// from undergoing React reconciliation every second.
+const Temporizador = memo(function Temporizador({
+  activo,
+  duracionMinutos,
+  onFinalizar
+}: {
+  activo: boolean;
+  duracionMinutos: number;
+  onFinalizar: () => void;
+}) {
+  const [tiempoRestante, setTiempoRestante] = useState(duracionMinutos * 60);
 
   useEffect(() => {
-    if (!activo || tiempoRestante <= 0) return;
+    if (!activo) {
+      setTiempoRestante(duracionMinutos * 60);
+      return;
+    }
 
     const intervalo = setInterval(() => {
       setTiempoRestante(prev => {
         if (prev <= 1) {
-          setActivo(false);
-          onCompletarMeditacion();
+          onFinalizar();
           return 0;
         }
         return prev - 1;
@@ -49,7 +54,39 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
     }, 1000);
 
     return () => clearInterval(intervalo);
-  }, [activo, tiempoRestante, onCompletarMeditacion]);
+  }, [activo, duracionMinutos, onFinalizar]);
+
+  if (!activo) return null;
+
+  const tiempoFormateado = `${Math.floor(tiempoRestante / 60)}:${(tiempoRestante % 60).toString().padStart(2, '0')}`;
+
+  return (
+    <div style={{
+      position: "absolute",
+      top: "2rem",
+      left: "50%",
+      transform: "translateX(-50%)",
+      color: "#fff",
+      fontSize: "3rem",
+      fontWeight: "300",
+      textShadow: "0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.5)",
+      zIndex: 10,
+      pointerEvents: "none"
+    }}>
+      {tiempoFormateado}
+    </div>
+  );
+});
+
+export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ onCompletarMeditacion }: Props) {
+  const [activo, setActivo] = useState(false);
+  const [frecuenciaSeleccionada, setFrecuenciaSeleccionada] = useState(528);
+  const [geometriaSeleccionada, setGeometriaSeleccionada] = useState<"flor-vida" | "merkaba" | "metatron" | "torus">("flor-vida");
+  const [duracion, setDuracion] = useState(10);
+
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
 
   const iniciarAudio = useCallback(() => {
     if (!audioContextRef.current) {
@@ -84,24 +121,27 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
     }
   }, []);
 
+  const finalizarMeditacion = useCallback(() => {
+    detenerAudio();
+    setActivo(false);
+    onCompletarMeditacion();
+  }, [detenerAudio, onCompletarMeditacion]);
+
   const toggleMeditacion = useCallback(() => {
     if (!activo) {
-      setTiempoRestante(duracion * 60);
       iniciarAudio();
       setActivo(true);
     } else {
       detenerAudio();
       setActivo(false);
     }
-  }, [activo, duracion, iniciarAudio, detenerAudio]);
+  }, [activo, iniciarAudio, detenerAudio]);
 
   useEffect(() => {
     return () => {
       detenerAudio();
     };
   }, [detenerAudio]);
-
-  const tiempoFormateado = `${Math.floor(tiempoRestante / 60)}:${(tiempoRestante % 60).toString().padStart(2, '0')}`;
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
@@ -116,22 +156,11 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           tipoGeometria={geometriaSeleccionada}
         />
 
-        {activo && (
-          <div style={{
-            position: "absolute",
-            top: "2rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            color: "#fff",
-            fontSize: "3rem",
-            fontWeight: "300",
-            textShadow: "0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.5)",
-            zIndex: 10,
-            pointerEvents: "none"
-          }}>
-            {tiempoFormateado}
-          </div>
-        )}
+        <Temporizador
+          activo={activo}
+          duracionMinutos={duracion}
+          onFinalizar={finalizarMeditacion}
+        />
       </div>
 
       <div style={{
