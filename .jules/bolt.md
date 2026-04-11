@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2025-06-25 - Internalizing R3F Animation State
+**Learning:** Found that driving continuous 3D material updates (like emissiveIntensity) using React state (`useState` and `setInterval`) in a parent component causes the entire React Three Fiber canvas to re-render, creating massive overhead for simple animations.
+**Action:** Internalize periodic state changes directly inside the child component's `useFrame` loop using `useRef`. Update the Three.js material properties directly (e.g., `material.emissiveIntensity`) to bypass React's asynchronous effect scheduling entirely.
