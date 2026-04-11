@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2026-04-11 - Internalizing 3D Animation State
+**Learning:** Found that moving high-frequency jitter logic from parent React state (`useState`) to child `useFrame` loop with `useRef` significantly reduces React reconciliation overhead. However, Next.js 16 with Turbopack can be extremely sensitive to `tsconfig.json` changes, potentially causing `ReactCurrentOwner` errors if the JSX runtime is misconfigured.
+**Action:** Always internalize animation logic in R3F components using `useFrame` and `useRef`, but strictly avoid modifying project-level configuration files like `tsconfig.json` to prevent breaking the build environment.

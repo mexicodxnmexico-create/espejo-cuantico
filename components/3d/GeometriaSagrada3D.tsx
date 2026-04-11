@@ -1,18 +1,20 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
+import { useRef, useMemo, useEffect, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+export const GeometriaSagrada3D = memo(function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+  const intensidadRef = useRef(50);
+  const acumuladorTiempoRef = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,8 +66,7 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
@@ -76,6 +77,12 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     if (!grupoRef.current) return;
 
     tiempo.current += delta;
+    acumuladorTiempoRef.current += delta;
+
+    if (activo && acumuladorTiempoRef.current > 2.0) {
+      intensidadRef.current = Math.max(30, Math.min(70, intensidadRef.current + (Math.random() - 0.5) * 10));
+      acumuladorTiempoRef.current = 0;
+    }
 
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
@@ -83,8 +90,11 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
     // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidadRef.current / 200);
     grupoRef.current.scale.setScalar(escala);
+
+    // Actualizar intensidad del material directamente
+    material.emissiveIntensity = intensidadRef.current / 100;
   });
 
   return (
@@ -94,7 +104,7 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
       ))}
     </group>
   );
-}
+});
 
 interface GeoData {
   geometria: THREE.BufferGeometry;
