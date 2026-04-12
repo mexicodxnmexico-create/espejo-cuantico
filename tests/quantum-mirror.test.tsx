@@ -139,6 +139,69 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional beta values correctly with Math.round', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Test fractional values that should round down (e.g., 14.9 / 10 = 1.49 -> 1)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 14.9, gamma: 0 });
+        });
+      }
+    });
+
+    let freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    let betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    // 432 + Math.round(14.9 / 10) = 432 + 1 = 433
+    assert.strictEqual(freqDiv.children[0], '433');
+    assert.strictEqual(betaDiv.children[0], '14.9');
+
+    // Test fractional values that should round up (e.g., 15.1 / 10 = 1.51 -> 2)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 15.1, gamma: 0 });
+        });
+      }
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    // 432 + Math.round(15.1 / 10) = 432 + 2 = 434
+    assert.strictEqual(freqDiv.children[0], '434');
+    assert.strictEqual(betaDiv.children[0], '15.1');
+
+    // Test negative fractional values
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: -15.1, gamma: 0 });
+        });
+      }
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    // 432 + Math.round(-15.1 / 10) = 432 - 2 = 430
+    assert.strictEqual(freqDiv.children[0], '430');
+    assert.strictEqual(betaDiv.children[0], '-15.1');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
