@@ -139,6 +139,63 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional beta values for rounding logic', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    // Test rounding down (e.g., 4.49 -> 0, freq 432 + 0 = 432)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 4.9, gamma: 0 }); // 4.9 / 10 = 0.49 -> rounds to 0
+        });
+      }
+    });
+
+    // 432 + Math.round(4.9 / 10) = 432 + 0 = 432
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(betaDiv.children[0], '4.9');
+
+    // Test rounding up (e.g., 5.1 -> 1, freq 432 + 1 = 433)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 5.1, gamma: 0 }); // 5.1 / 10 = 0.51 -> rounds to 1
+        });
+      }
+    });
+
+    // 432 + Math.round(5.1 / 10) = 432 + 1 = 433
+    assert.strictEqual(freqDiv.children[0], '433');
+    assert.strictEqual(betaDiv.children[0], '5.1');
+
+    // Test negative rounding (e.g., -5.1 -> -1, freq 432 - 1 = 431)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: -5.1, gamma: 0 }); // -5.1 / 10 = -0.51 -> rounds to -1
+        });
+      }
+    });
+
+    // 432 + Math.round(-5.1 / 10) = 432 - 1 = 431
+    assert.strictEqual(freqDiv.children[0], '431');
+    assert.strictEqual(betaDiv.children[0], '-5.1');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
