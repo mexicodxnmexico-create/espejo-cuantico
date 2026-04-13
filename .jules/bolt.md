@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Internalizing R3F Animation State
+**Learning:** Updating React state (e.g., via `setInterval`) for high-frequency 3D animations (like pulsating intensity) triggers full component re-renders and React reconciliation, which is expensive for complex 3D scenes.
+**Action:** Internalize animation state using `useRef` and the `useFrame` loop. Update Three.js properties (e.g., `material.emissiveIntensity`) directly within `useFrame` to bypass React's render cycle entirely, achieving O(1) React overhead for continuous animations.
