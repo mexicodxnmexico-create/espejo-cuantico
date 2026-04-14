@@ -2,7 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, Environment } from "@react-three/drei";
-import { Suspense, useState, useEffect, memo } from "react";
+import { Suspense, memo } from "react";
 import { GeometriaSagrada3D } from "./GeometriaSagrada3D";
 import { ParticulasCuanticas } from "./ParticulasCuanticas";
 
@@ -13,22 +13,8 @@ interface EscenaMeditacion3DProps {
 }
 
 // ⚡ BOLT: Wrap in React.memo to prevent massive 3D canvas re-renders caused by parent 1-second timers
+// ⚡ BOLT: Removed 'intensidad' state to avoid re-rendering the whole Canvas every 2 seconds. State is handled internally.
 export const EscenaMeditacion3D = memo(function EscenaMeditacion3D({ frecuencia, activo, tipoGeometria }: EscenaMeditacion3DProps) {
-  const [intensidad, setIntensidad] = useState(50);
-
-  useEffect(() => {
-    if (!activo) return;
-
-    const intervalo = setInterval(() => {
-      setIntensidad(prev => {
-        const nuevo = prev + (Math.random() - 0.5) * 10;
-        return Math.max(30, Math.min(70, nuevo));
-      });
-    }, 2000);
-
-    return () => clearInterval(intervalo);
-  }, [activo]);
-
   return (
     <div style={{ width: "100%", height: "600px", borderRadius: "20px", overflow: "hidden" }}>
       <Canvas
@@ -55,7 +41,7 @@ export const EscenaMeditacion3D = memo(function EscenaMeditacion3D({ frecuencia,
 
           <GeometriaSagrada3D
             frecuencia={frecuencia}
-            intensidad={intensidad}
+            activo={activo}
             tipo={tipoGeometria}
           />
 
