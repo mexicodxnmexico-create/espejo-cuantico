@@ -27,7 +27,7 @@ const H1_STYLE: CSSProperties = { fontSize: "3.5rem", marginBottom: "1rem", lett
 const STATUS_STYLE: CSSProperties = { fontSize: "1.25rem", color: "#666", maxWidth: "600px", margin: "0 auto" };
 const FOOTER_STYLE: CSSProperties = { padding: "4rem 0", textAlign: "center", borderTop: "1px solid #eaeaea", color: "#555", fontSize: "0.8rem" };
 const TABS_STYLE: CSSProperties = { display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "2rem" };
-const TAB_BUTTON_STYLE: CSSProperties = { padding: "0.5rem 1rem", border: "1px solid #ccc", borderRadius: "4px", background: "none", cursor: "pointer", fontSize: "1rem" };
+const TAB_BUTTON_STYLE: CSSProperties = { padding: "0.5rem 1rem", border: "1px solid #ccc", borderRadius: "4px", background: "none", cursor: "pointer", fontSize: "1rem", transition: "all 0.2s ease" };
 const TAB_BUTTON_ACTIVE_STYLE: CSSProperties = { ...TAB_BUTTON_STYLE, background: "#000", color: "#fff", borderColor: "#000" };
 
 export default function Home() {
@@ -68,14 +68,22 @@ export default function Home() {
 
       <Header />
 
-      <div style={TABS_STYLE}>
+      <div style={TABS_STYLE} role="tablist" aria-label="Vistas de la aplicación">
         <button
+          role="tab"
+          id="tab-espejo"
+          aria-selected={activeTab === "espejo"}
+          aria-controls="panel-espejo"
           style={activeTab === "espejo" ? TAB_BUTTON_ACTIVE_STYLE : TAB_BUTTON_STYLE}
           onClick={() => setActiveTab("espejo")}
         >
           Espejo Cuántico
         </button>
         <button
+          role="tab"
+          id="tab-meditacion"
+          aria-selected={activeTab === "meditacion"}
+          aria-controls="panel-meditacion"
           style={activeTab === "meditacion" ? TAB_BUTTON_ACTIVE_STYLE : TAB_BUTTON_STYLE}
           onClick={() => setActiveTab("meditacion")}
         >
@@ -85,7 +93,7 @@ export default function Home() {
 
       <main style={MAIN_STYLE}>
         {activeTab === "espejo" ? (
-          <>
+          <div role="tabpanel" id="panel-espejo" aria-labelledby="tab-espejo">
             <section style={HEADER_SECTION_STYLE}>
               <h1 style={H1_STYLE}>Espejo Cuántico</h1>
               <p role="status" aria-live="polite" style={STATUS_STYLE}>
@@ -102,9 +110,11 @@ export default function Home() {
             )}
 
             <HistorySection historyToRender={historyToRender} startIndex={startIndex} />
-          </>
+          </div>
         ) : (
-          <MeditacionAudioVisual3D onCompletarMeditacion={() => setActiveTab("espejo")} />
+          <div role="tabpanel" id="panel-meditacion" aria-labelledby="tab-meditacion">
+            <MeditacionAudioVisual3D onCompletarMeditacion={() => setActiveTab("espejo")} />
+          </div>
         )}
       </main>
 
