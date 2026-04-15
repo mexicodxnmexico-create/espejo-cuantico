@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-07-10 - Internalizing High-Frequency Animation State
+**Learning:** Found that managing animation state (like 'intensity') at the React level within a 3D scene component caused the entire Canvas and all its children to undergo React reconciliation on every update (e.g., every 2 seconds). In R3F, this is an anti-pattern for visual-only updates.
+**Action:** Internalize high-frequency or throttled animation logic using `useRef` and update Three.js object properties directly within the `useFrame` loop. This completely bypasses React's reconciliation cycle for those updates, ensuring smooth performance even with complex scenes.
