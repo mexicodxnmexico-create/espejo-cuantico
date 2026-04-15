@@ -13,3 +13,7 @@
 ## 2025-03-15 - Critical Error State Accessibility
 **Learning:** When a system enters a critical error or collapsed state that disables primary UI interactions, simply rendering the state is insufficient. It requires 'role="alert"' to announce the critical state and explicit focus shifting (via 'autoFocus' or 'useEffect' with 'useRef') to the primary recovery action to maintain accessibility.
 **Action:** Always add 'role="alert"' to error containers and explicitly shift focus to the recovery button or primary text when a disruptive error state mounts.
+
+## 2025-04-15 - Input Labels with Implicit Headers
+**Learning:** Re-purposing header tags (like `<h3>`) as visual labels for inputs is a common anti-pattern that breaks screen reader accessibility since the input is unassociated with a `<label>`. However, you can perfectly replace them with `<label htmlFor="id">` and retain the exact visual styling (e.g., `display: "block"`, `fontWeight: "bold"`).
+**Action:** Always replace visual-only headers used to label inputs with explicit `<label>` elements linked via `id` and `htmlFor`, mimicking the old display styles if necessary to avoid design regressions.
