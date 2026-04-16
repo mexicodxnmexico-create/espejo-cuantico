@@ -171,6 +171,90 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles decimal values and NaN correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10.5, beta: 45.7, gamma: 180.2 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    // 432 + Math.round(45.7 / 10) = 432 + Math.round(4.57) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+    assert.strictEqual(alphaDiv.children[0], '10.5');
+    assert.strictEqual(betaDiv.children[0], '45.7');
+    assert.strictEqual(gammaDiv.children[0], '180.2');
+
+    // Test with NaN
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: NaN, beta: NaN, gamma: NaN });
+        });
+      }
+    });
+
+    // When beta is NaN, it's falsy, so e.beta || 0 will be 0.
+    // However, e.beta ? ... : 0 will be 0.
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
+  await t.test('handles a stream of rapid consecutive events', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 10, gamma: 10 });
+          listener({ alpha: 20, beta: 20, gamma: 20 });
+          listener({ alpha: 30, beta: 30, gamma: 30 });
+          listener({ alpha: 40, beta: 45, gamma: 40 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    // 432 + Math.round(45 / 10) = 432 + 5 = 437
+    assert.strictEqual(freqDiv.children[0], '437');
+    assert.strictEqual(alphaDiv.children[0], '40');
+    assert.strictEqual(betaDiv.children[0], '45');
+    assert.strictEqual(gammaDiv.children[0], '40');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('removes event listener on unmount', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
