@@ -56,6 +56,7 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
     tiempo.current += delta;
     const t = tiempo.current;
+    const tHalf = t * 0.5; // ⚡ BOLT: Move invariant calculation outside the loop
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
@@ -71,7 +72,7 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       const phase = t + i;
       const nextX = x + Math.sin(phase) * velocidad;
       const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      const nextZ = z + Math.sin(tHalf + i) * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
