@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2026-04-18 - React Three Fiber Direct Visual Updates
+**Learning:** In a high-frequency context like React Three Fiber, wrapping visual oscillations (like pulsing emissive intensity or scaling) in a React state with `setInterval` causes massive reconciliation and redundant re-renders. It blocks the main thread unnecessarily because it forces React to map changes that can just be updated natively on the Three.js mesh directly.
+**Action:** Replicate the interval/timer logic directly inside `useFrame` by maintaining references (`useRef`) for the state and the timestamp. Then update the `mesh.material` or `mesh.scale` mutably to bypass the React render cycle entirely, leading to much better visual performance and reduced CPU overhead.
