@@ -6,13 +6,15 @@ import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+export function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+  const intensidadRef = useRef(50);
+  const ultimoRef = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,8 +66,9 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    // emissiveIntensity is now managed in useFrame to avoid React re-renders
+    material.emissiveIntensity = intensidadRef.current / 100;
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
@@ -82,8 +85,17 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
     grupoRef.current.rotation.y += velocidad;
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
+    // ⚡ BOLT: Replicate throttled interval logic natively in useFrame
+    if (activo && tiempo.current - ultimoRef.current > 2) {
+      const nuevo = intensidadRef.current + (Math.random() - 0.5) * 10;
+      intensidadRef.current = Math.max(30, Math.min(70, nuevo));
+      ultimoRef.current = tiempo.current;
+      // Update material directly
+      material.emissiveIntensity = intensidadRef.current / 100;
+    }
+
     // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidadRef.current / 200);
     grupoRef.current.scale.setScalar(escala);
   });
 
