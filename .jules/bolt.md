@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2025-06-25 - React Three Fiber Re-render Storm via Parent State
+**Learning:** Found that a React state `setInterval` updating `intensidad` every 2 seconds in the parent `EscenaMeditacion3D` was causing the entire R3F `<Canvas>` and all its complex 3D children to reconcile unnecessarily.
+**Action:** Replicated the throttled interval logic entirely inside the `useFrame` loop of the child `GeometriaSagrada3D` using mutable `useRef` (e.g., `lastUpdateTimeRef` and `intensidadRef`). This offloads the high-frequency updates to the native WebGL render loop, bypassing React state entirely and ensuring O(1) performance for visual animations.
