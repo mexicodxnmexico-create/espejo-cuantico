@@ -6,13 +6,17 @@ import * as THREE from "three";
 
 interface GeometriaSagrada3DProps {
   frecuencia: number;
-  intensidad: number;
+  activo: boolean;
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
-export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
+export function GeometriaSagrada3D({ frecuencia, activo, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
+
+  // ⚡ BOLT: Move intensity state to refs to prevent React reconciliation during high-frequency updates
+  const intensidadRef = useRef(50);
+  const lastUpdateRef = useRef(0);
 
   // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
   const colorFrecuencia = useMemo(() => {
@@ -64,8 +68,8 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
   useEffect(() => {
     material.color.set(colorFrecuencia);
     material.emissive.set(colorFrecuencia);
-    material.emissiveIntensity = intensidad / 100;
-  }, [material, colorFrecuencia, intensidad]);
+    // emissiveIntensity is now managed in useFrame
+  }, [material, colorFrecuencia]);
 
   useEffect(() => {
     return () => material.dispose();
@@ -77,14 +81,24 @@ export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSa
 
     tiempo.current += delta;
 
+    // ⚡ BOLT: Simulate 2s interval logic inside the render loop using refs
+    if (activo && tiempo.current - lastUpdateRef.current > 2) {
+      const nuevo = intensidadRef.current + (Math.random() - 0.5) * 10;
+      intensidadRef.current = Math.max(30, Math.min(70, nuevo));
+      lastUpdateRef.current = tiempo.current;
+    }
+
     // Rotación suave basada en la frecuencia
     const velocidad = frecuencia / 10000;
     grupoRef.current.rotation.y += velocidad;
     grupoRef.current.rotation.x = Math.sin(tiempo.current * 0.3) * 0.2;
 
     // Pulsación basada en intensidad
-    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidad / 200);
+    const escala = 1 + Math.sin(tiempo.current * 2) * (intensidadRef.current / 200);
     grupoRef.current.scale.setScalar(escala);
+
+    // ⚡ BOLT: Directly mutate material to avoid React state
+    material.emissiveIntensity = intensidadRef.current / 100;
   });
 
   return (
