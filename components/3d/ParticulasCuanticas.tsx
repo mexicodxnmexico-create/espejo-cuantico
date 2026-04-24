@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -19,9 +19,21 @@ const COLORES_SOLFEGGIO: Record<number, { r: number; g: number; b: number }> = {
   852: { r: 0.51, g: 0.22, b: 0.93 }
 };
 
-export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuanticasProps) {
+export const ParticulasCuanticas = memo(function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuanticasProps) {
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
+
+  // ⚡ BOLT: Pre-calculate trigonometric lookup tables to avoid O(n) Math.sin/cos calls per frame.
+  // This reduces trig operations in useFrame from 3000 to just 4 per frame.
+  const [sinTable, cosTable] = useMemo(() => {
+    const s = new Float32Array(cantidad);
+    const c = new Float32Array(cantidad);
+    for (let i = 0; i < cantidad; i++) {
+      s[i] = Math.sin(i);
+      c[i] = Math.cos(i);
+    }
+    return [s, c];
+  }, [cantidad]);
 
   const [posiciones, colores, tamaños] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
@@ -56,8 +68,17 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
     tiempo.current += delta;
     const t = tiempo.current;
+    const t05 = t * 0.5;
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
+
+    // ⚡ BOLT: Use trigonometric identities to avoid expensive Math calls in the loop
+    // sin(t + i) = sin(t)cos(i) + cos(t)sin(i)
+    // cos(t + i) = cos(t)cos(i) - sin(t)sin(i)
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinT05 = Math.sin(t05);
+    const cosT05 = Math.cos(t05);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -68,10 +89,16 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
       // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
       // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      const si = sinTable[i];
+      const ci = cosTable[i];
+
+      const sinPhase = sinT * ci + cosT * si;
+      const cosPhase = cosT * ci - sinT * si;
+      const sinPhase05 = sinT05 * ci + cosT05 * si;
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinPhase05 * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
@@ -128,4 +155,4 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       />
     </points>
   );
-}
+});
