@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Trigonometric Expansion for Particle Loops
+**Learning:** High-frequency loops in Three.js (e.g., 1000+ particles in `useFrame`) that use phase-shifted oscillations like `Math.sin(t + i)` can be a significant CPU bottleneck due to thousands of trigonometric calls per frame.
+**Action:** Use trigonometric expansion identities ($\sin(a+b) = \sin a \cos b + \cos a \sin b$) and pre-calculate particle-specific constants ($\sin i$, $\cos i$) to replace thousands of per-frame trig calls with simple arithmetic.
