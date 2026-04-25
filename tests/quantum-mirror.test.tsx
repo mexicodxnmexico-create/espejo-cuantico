@@ -90,6 +90,74 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional rounding of beta values correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+
+    // Math.round(44 / 10) = 4 -> 436
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 44, gamma: 0 });
+        });
+      }
+    });
+    assert.strictEqual(freqDiv.children[0], '436');
+
+    // Math.round(45 / 10) = 5 -> 437
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 45, gamma: 0 });
+        });
+      }
+    });
+    assert.strictEqual(freqDiv.children[0], '437');
+
+    // Math.round(-44 / 10) = -4 -> 428
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: -44, gamma: 0 });
+        });
+      }
+    });
+    assert.strictEqual(freqDiv.children[0], '428');
+
+    // Math.round(-45 / 10) = -4 (in JS, Math.round(-4.5) is -4) -> 428
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: -45, gamma: 0 });
+        });
+      }
+    });
+    assert.strictEqual(freqDiv.children[0], '428');
+
+    // Math.round(-46 / 10) = -5 -> 427
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: -46, gamma: 0 });
+        });
+      }
+    });
+    assert.strictEqual(freqDiv.children[0], '427');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
 
   await t.test('handles negative and zero beta values correctly', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
@@ -146,12 +214,44 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
-    // Dispatch mock deviceorientation event with null/undefined values
+    // Dispatch mock deviceorientation event with null values
     TestRenderer.act(() => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
           listener({ alpha: null, beta: null, gamma: null });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
+  await t.test('handles undefined event values gracefully', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Dispatch mock deviceorientation event with undefined values
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: undefined, beta: undefined, gamma: undefined });
         });
       }
     });
