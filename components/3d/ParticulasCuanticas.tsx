@@ -23,10 +23,12 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  const [posiciones, colores, tamaños, sinI, cosI] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
     const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
+    const sI = new Float32Array(cantidad);
+    const cI = new Float32Array(cantidad);
 
     const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
@@ -46,9 +48,13 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
 
       tam[i] = Math.random() * 0.05 + 0.02;
+
+      // ⚡ BOLT: Pre-calculate sin/cos per particle for expansion identities
+      sI[i] = Math.sin(i);
+      cI[i] = Math.cos(i);
     }
 
-    return [pos, col, tam];
+    return [pos, col, tam, sI, cI];
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
@@ -59,6 +65,12 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
+    // ⚡ BOLT: Extract time-based trigonometry outside the particle loop
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinT05 = Math.sin(t * 0.5);
+    const cosT05 = Math.cos(t * 0.5);
+
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
 
@@ -68,10 +80,18 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
       // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
       // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+
+      // ⚡ BOLT: Apply trigonometric expansion identities to avoid per-particle Math.sin/cos calls
+      const s_i = sinI[i];
+      const c_i = cosI[i];
+
+      const sinPhase = sinT * c_i + cosT * s_i;       // sin(t+i)
+      const cosPhase = cosT * c_i - sinT * s_i;       // cos(t+i)
+      const sinPhase05 = sinT05 * c_i + cosT05 * s_i; // sin(t*0.5+i)
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinPhase05 * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
