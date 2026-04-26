@@ -23,15 +23,20 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  // ⚡ BOLT: Pre-calculate sin(i) and cos(i) for trigonometric expansion
+  // This allows replacing expensive per-particle Math.sin/cos calls in the frame loop
+  // with simple arithmetic: sin(t+i) = sin(t)cos(i) + cos(t)sin(i)
+  const [posiciones, colores, tamaños, pretrig] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
     const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
+    const trig = new Float32Array(cantidad * 2); // [sin_i, cos_i, sin_i, cos_i, ...]
 
     const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
+      const i2 = i * 2;
 
       const radio = Math.random() * 5 + 3;
       const theta = Math.random() * Math.PI * 2;
@@ -46,9 +51,13 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
 
       tam[i] = Math.random() * 0.05 + 0.02;
+
+      // Pre-calculate per-particle trig constants
+      trig[i2] = Math.sin(i);
+      trig[i2 + 1] = Math.cos(i);
     }
 
-    return [pos, col, tam];
+    return [pos, col, tam, trig];
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
@@ -56,22 +65,37 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
     tiempo.current += delta;
     const t = tiempo.current;
+    const t05 = t * 0.5;
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
+    // ⚡ BOLT: Calculate frame-invariant trig values once per frame
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinT05 = Math.sin(t05);
+    const cosT05 = Math.cos(t05);
+
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
+      const i2 = i * 2;
 
       const x = posicionesArray[i3];
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
-      // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      // ⚡ BOLT: Use trigonometric expansion identities to avoid per-particle trig calls
+      // sin(t + i) = sin(t)cos(i) + cos(t)sin(i)
+      // cos(t + i) = cos(t)cos(i) - sin(t)sin(i)
+      const sinI = pretrig[i2];
+      const cosI = pretrig[i2 + 1];
+
+      const sinTplusI = sinT * cosI + cosT * sinI;
+      const cosTplusI = cosT * cosI - sinT * sinI;
+      const sinT05plusI = sinT05 * cosI + cosT05 * sinI;
+
+      const nextX = x + sinTplusI * velocidad;
+      const nextY = y + cosTplusI * velocidad;
+      const nextZ = z + sinT05plusI * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
