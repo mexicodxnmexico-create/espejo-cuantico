@@ -139,6 +139,77 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional number rounding for frequency calculation', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Dispatch event with beta 14.9 (rounds to 1)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 14.9, gamma: 10 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    // 432 + Math.round(14.9 / 10) = 432 + Math.round(1.49) = 432 + 1 = 433
+    assert.strictEqual(freqDiv.children[0], '433');
+
+    // Dispatch event with beta 15.1 (rounds to 2)
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 15.1, gamma: 10 });
+        });
+      }
+    });
+
+    // 432 + Math.round(15.1 / 10) = 432 + Math.round(1.51) = 432 + 2 = 434
+    assert.strictEqual(freqDiv.children[0], '434');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
+  await t.test('handles undefined event properties gracefully', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Dispatch mock deviceorientation event with undefined values
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: undefined, beta: undefined, gamma: undefined });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+    const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
+
+    assert.strictEqual(freqDiv.children[0], '432');
+    assert.strictEqual(alphaDiv.children[0], '0');
+    assert.strictEqual(betaDiv.children[0], '0');
+    assert.strictEqual(gammaDiv.children[0], '0');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('handles missing event values gracefully', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
