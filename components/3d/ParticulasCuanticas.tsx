@@ -23,14 +23,18 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  const [posiciones, colores, tamaños, sinI, cosI] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
     const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
+    const sI = new Float32Array(cantidad);
+    const cI = new Float32Array(cantidad);
 
     const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
     for (let i = 0; i < cantidad; i++) {
+      sI[i] = Math.sin(i);
+      cI[i] = Math.cos(i);
       const i3 = i * 3;
 
       const radio = Math.random() * 5 + 3;
@@ -48,7 +52,7 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       tam[i] = Math.random() * 0.05 + 0.02;
     }
 
-    return [pos, col, tam];
+    return [pos, col, tam, sI, cI];
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
@@ -59,6 +63,14 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
+    // ⚡ BOLT: Pre-calculate common trigonometric values for the current frame
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+
+    const tHalf = t * 0.5;
+    const sinTHalf = Math.sin(tHalf);
+    const cosTHalf = Math.cos(tHalf);
+
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
 
@@ -68,10 +80,20 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
       // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
       // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      // ⚡ BOLT: Apply trigonometric identities to avoid Math.sin/cos per particle
+      // sin(t + i) = sin(t)*cos(i) + cos(t)*sin(i)
+      // cos(t + i) = cos(t)*cos(i) - sin(t)*sin(i)
+
+      const s_i = sinI[i];
+      const c_i = cosI[i];
+
+      const sinPhase = sinT * c_i + cosT * s_i;
+      const cosPhase = cosT * c_i - sinT * s_i;
+      const sinPhaseHalf = sinTHalf * c_i + cosTHalf * s_i;
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinPhaseHalf * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
