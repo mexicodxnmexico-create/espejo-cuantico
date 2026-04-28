@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2026-04-28 - Pre-calculated Trigonometric Lookup and Identity Expansion
+**Learning:** Found that `components/3d/ParticulasCuanticas.tsx` was performing thousands of `Math.sin(t + i)` and `Math.cos(t + i)` calls per frame inside a `useFrame` loop. This is extremely costly for the CPU during 3D rendering. Because `i` is a static particle index, its sine and cosine values are constant.
+**Action:** Pre-calculate `sin(i)` and `cos(i)` arrays in a `useMemo` hook. During the render loop, calculate `sin(t)` and `cos(t)` once, and use trigonometric sum identities (`sin(t+i) = sin(t)cos(i) + cos(t)sin(i)`) to replace the per-particle trigonometric functions with simple arithmetic operations, massively reducing CPU overhead.
