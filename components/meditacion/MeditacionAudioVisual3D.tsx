@@ -23,6 +23,66 @@ const GEOMETRIAS = [
   { id: "torus" as const, nombre: "Torus Energético" }
 ];
 
+// ⚡ BOLT: Extract static styles to prevent re-creation during 1-second interval re-renders
+const MAIN_CONTAINER_STYLE = { maxWidth: "1200px", margin: "0 auto", padding: "2rem" };
+const HEADER_STYLE = { fontSize: "2rem", marginBottom: "1.5rem", textAlign: "center" };
+const SCENE_CONTAINER_STYLE = { position: "relative", marginBottom: "2rem" } as const;
+const TIMER_STYLE = {
+  position: "absolute",
+  top: "2rem",
+  left: "50%",
+  transform: "translateX(-50%)",
+  color: "#fff",
+  fontSize: "3rem",
+  fontWeight: "300",
+  textShadow: "0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.5)",
+  zIndex: 10,
+  pointerEvents: "none"
+} as const;
+const GRID_CONTAINER_STYLE = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+  gap: "1.5rem",
+  marginBottom: "2rem"
+};
+const CARD_STYLE = {
+  padding: "1.5rem",
+  background: "#fff",
+  borderRadius: "12px",
+  border: "1px solid #eaeaea"
+};
+const CARD_TITLE_STYLE = { fontSize: "1rem", marginBottom: "1rem", color: "#333" };
+const INPUT_STYLE = {
+  width: "100%",
+  padding: "0.75rem",
+  borderRadius: "8px",
+  border: "1px solid #ddd",
+  fontSize: "1rem",
+  background: "#fff"
+};
+const NUMBER_INPUT_STYLE = { ...INPUT_STYLE, background: undefined };
+const BUTTON_BASE_STYLE = {
+  width: "100%",
+  padding: "1.5rem",
+  borderRadius: "12px",
+  border: "none",
+  color: "#fff",
+  fontSize: "1.25rem",
+  fontWeight: "600",
+  cursor: "pointer",
+  transition: "all 0.3s ease",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
+};
+const INFO_CONTAINER_STYLE = {
+  marginTop: "2rem",
+  padding: "1.5rem",
+  background: "#f0f7ff",
+  borderRadius: "12px",
+  border: "1px solid #bde0fe"
+};
+const INFO_TITLE_STYLE = { fontSize: "1.1rem", marginBottom: "0.75rem", color: "#023e8a" };
+const INFO_TEXT_STYLE = { margin: 0, color: "#0466c8", lineHeight: "1.6" };
+
 export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ onCompletarMeditacion }: Props) {
   const [activo, setActivo] = useState(false);
   const [frecuenciaSeleccionada, setFrecuenciaSeleccionada] = useState(528);
@@ -103,13 +163,21 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
 
   const tiempoFormateado = `${Math.floor(tiempoRestante / 60)}:${(tiempoRestante % 60).toString().padStart(2, '0')}`;
 
+  // ⚡ BOLT: Dynamic styles are calculated here, static styles use references
+  const buttonStyle = {
+    ...BUTTON_BASE_STYLE,
+    background: activo
+      ? "linear-gradient(135deg, #e63946 0%, #d62828 100%)"
+      : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+  };
+
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem" }}>
-      <h2 style={{ fontSize: "2rem", marginBottom: "1.5rem", textAlign: "center" }}>
+    <div style={MAIN_CONTAINER_STYLE}>
+      <h2 style={HEADER_STYLE}>
         Meditación Cuántica Tridimensional
       </h2>
 
-      <div style={{ position: "relative", marginBottom: "2rem" }}>
+      <div style={SCENE_CONTAINER_STYLE}>
         <EscenaMeditacion3D
           frecuencia={frecuenciaSeleccionada}
           activo={activo}
@@ -117,50 +185,22 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
         />
 
         {activo && (
-          <div style={{
-            position: "absolute",
-            top: "2rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            color: "#fff",
-            fontSize: "3rem",
-            fontWeight: "300",
-            textShadow: "0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.5)",
-            zIndex: 10,
-            pointerEvents: "none"
-          }}>
+          <div style={TIMER_STYLE}>
             {tiempoFormateado}
           </div>
         )}
       </div>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-        gap: "1.5rem",
-        marginBottom: "2rem"
-      }}>
-        <div style={{
-          padding: "1.5rem",
-          background: "#fff",
-          borderRadius: "12px",
-          border: "1px solid #eaeaea"
-        }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+      <div style={GRID_CONTAINER_STYLE}>
+        <div style={CARD_STYLE}>
+          <h3 style={CARD_TITLE_STYLE}>
             Frecuencia Solfeggio
           </h3>
           <select
             value={frecuenciaSeleccionada}
             onChange={(e) => setFrecuenciaSeleccionada(Number(e.target.value))}
             disabled={activo}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #ddd",
-              fontSize: "1rem",
-              background: "#fff"
-            }}
+            style={INPUT_STYLE}
           >
             {FRECUENCIAS_SOLFEGGIO.map(f => (
               <option key={f.hz} value={f.hz}>
@@ -170,27 +210,15 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           </select>
         </div>
 
-        <div style={{
-          padding: "1.5rem",
-          background: "#fff",
-          borderRadius: "12px",
-          border: "1px solid #eaeaea"
-        }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+        <div style={CARD_STYLE}>
+          <h3 style={CARD_TITLE_STYLE}>
             Geometría Sagrada
           </h3>
           <select
             value={geometriaSeleccionada}
             onChange={(e) => setGeometriaSeleccionada(e.target.value as any)}
             disabled={activo}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #ddd",
-              fontSize: "1rem",
-              background: "#fff"
-            }}
+            style={INPUT_STYLE}
           >
             {GEOMETRIAS.map(g => (
               <option key={g.id} value={g.id}>
@@ -200,13 +228,8 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           </select>
         </div>
 
-        <div style={{
-          padding: "1.5rem",
-          background: "#fff",
-          borderRadius: "12px",
-          border: "1px solid #eaeaea"
-        }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+        <div style={CARD_STYLE}>
+          <h3 style={CARD_TITLE_STYLE}>
             Duración (minutos)
           </h3>
           <input
@@ -216,49 +239,23 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
             value={duracion}
             onChange={(e) => setDuracion(Number(e.target.value))}
             disabled={activo}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #ddd",
-              fontSize: "1rem"
-            }}
+            style={NUMBER_INPUT_STYLE}
           />
         </div>
       </div>
 
       <button
         onClick={toggleMeditacion}
-        style={{
-          width: "100%",
-          padding: "1.5rem",
-          borderRadius: "12px",
-          border: "none",
-          background: activo
-            ? "linear-gradient(135deg, #e63946 0%, #d62828 100%)"
-            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "#fff",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-          cursor: "pointer",
-          transition: "all 0.3s ease",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
-        }}
+        style={buttonStyle}
       >
         {activo ? "⏸ Detener Meditación" : "▶ Iniciar Meditación Cuántica"}
       </button>
 
-      <div style={{
-        marginTop: "2rem",
-        padding: "1.5rem",
-        background: "#f0f7ff",
-        borderRadius: "12px",
-        border: "1px solid #bde0fe"
-      }}>
-        <h3 style={{ fontSize: "1.1rem", marginBottom: "0.75rem", color: "#023e8a" }}>
+      <div style={INFO_CONTAINER_STYLE}>
+        <h3 style={INFO_TITLE_STYLE}>
           💡 Acerca de esta experiencia
         </h3>
-        <p style={{ margin: 0, color: "#0466c8", lineHeight: "1.6" }}>
+        <p style={INFO_TEXT_STYLE}>
           La frecuencia de {frecuenciaSeleccionada} Hz combinada con la geometría sagrada {GEOMETRIAS.find(g => g.id === geometriaSeleccionada)?.nombre} crea un campo de resonancia cuántica que facilita estados profundos de meditación. Las visualizaciones tridimensionales interactivas sincronizan con las frecuencias sonoras para optimizar la coherencia cerebral y la armonización energética.
         </p>
       </div>
