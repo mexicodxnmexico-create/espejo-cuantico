@@ -23,10 +23,12 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  const [posiciones, colores, tamaños, preSin, preCos] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
     const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
+    const psin = new Float32Array(cantidad);
+    const pcos = new Float32Array(cantidad);
 
     const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
@@ -46,9 +48,13 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
 
       tam[i] = Math.random() * 0.05 + 0.02;
+
+      // ⚡ BOLT: Pre-calculate sin(i) and cos(i) for trigonometric expansion
+      psin[i] = Math.sin(i);
+      pcos[i] = Math.cos(i);
     }
 
-    return [pos, col, tam];
+    return [pos, col, tam, psin, pcos];
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
@@ -59,19 +65,28 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
+    // ⚡ BOLT: Calculate frame-wide trig values once to use in expansion
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinT2 = Math.sin(t * 0.5);
+    const cosT2 = Math.cos(t * 0.5);
+
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
+      const si = preSin[i];
+      const ci = preCos[i];
 
       const x = posicionesArray[i3];
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
-      // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      // ⚡ BOLT: Trigonometric expansion reduces 3N calls to 4 per frame
+      // sin(t + i) = sin(t)cos(i) + cos(t)sin(i)
+      // cos(t + i) = cos(t)cos(i) - sin(t)sin(i)
+      // sin(t*0.5 + i) = sin(t*0.5)cos(i) + cos(t*0.5)sin(i)
+      const nextX = x + (sinT * ci + cosT * si) * velocidad;
+      const nextY = y + (cosT * ci - sinT * si) * velocidad;
+      const nextZ = z + (sinT2 * ci + cosT2 * si) * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
