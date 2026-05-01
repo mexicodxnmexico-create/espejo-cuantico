@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - DeviceOrientation Throttling
+**Learning:** Found that `QuantumMirror.tsx` was dispatching raw `deviceorientation` events directly into React state updates without any throttling. Since sensor events fire extremely fast (often 60+ Hz, sometimes >100 Hz depending on the device), this results in severe main thread blocking and unnecessary rapid re-renders.
+**Action:** Throttle the state update in the event listener using `requestAnimationFrame` and track pending frames with a `useRef`. This synchronizes updates with the device's display refresh rate (e.g. ~60fps) and drops unnecessary intermediate state updates.
