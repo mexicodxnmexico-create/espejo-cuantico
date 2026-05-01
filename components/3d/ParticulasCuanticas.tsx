@@ -23,16 +23,16 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  // ⚡ BOLT: Decouple particle data from frequency to prevent re-randomization and O(n) overhead
+  const { posiciones, tamaños, sinI, cosI, colorOffsets } = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
-    const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
-
-    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+    const sI = new Float32Array(cantidad);
+    const cI = new Float32Array(cantidad);
+    const cOff = new Float32Array(cantidad * 3);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
-
       const radio = Math.random() * 5 + 3;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
@@ -41,23 +41,49 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       pos[i3 + 1] = radio * Math.sin(phi) * Math.sin(theta);
       pos[i3 + 2] = radio * Math.cos(phi);
 
-      col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
-      col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
-      col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
-
       tam[i] = Math.random() * 0.05 + 0.02;
+
+      // ⚡ BOLT: Pre-calculate sin(i) and cos(i) for trigonometric expansion in render loop
+      sI[i] = Math.sin(i);
+      cI[i] = Math.cos(i);
+
+      cOff[i3] = (Math.random() - 0.5) * 0.2;
+      cOff[i3 + 1] = (Math.random() - 0.5) * 0.2;
+      cOff[i3 + 2] = (Math.random() - 0.5) * 0.2;
     }
 
-    return [pos, col, tam];
-  }, [cantidad, frecuencia]);
+    return { posiciones: pos, tamaños: tam, sinI: sI, cosI: cI, colorOffsets: cOff };
+  }, [cantidad]);
+
+  // ⚡ BOLT: Stable color calculation based on frequency and pre-calculated offsets
+  const colores = useMemo(() => {
+    const col = new Float32Array(cantidad * 3);
+    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+
+    for (let i = 0; i < cantidad; i++) {
+      const i3 = i * 3;
+      col[i3] = colorBase.r + colorOffsets[i3];
+      col[i3 + 1] = colorBase.g + colorOffsets[i3 + 1];
+      col[i3 + 2] = colorBase.b + colorOffsets[i3 + 2];
+    }
+    return col;
+  }, [cantidad, frecuencia, colorOffsets]);
 
   useFrame((_state, delta) => {
     if (!particulasRef.current || cantidad === 0) return;
 
     tiempo.current += delta;
     const t = tiempo.current;
+    const t2 = t * 0.5;
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
+
+    // ⚡ BOLT: Pre-calculate loop invariants for trigonometric expansion:
+    // sin(t+i) = sin(t)cos(i) + cos(t)sin(i)
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinT2 = Math.sin(t2);
+    const cosT2 = Math.cos(t2);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -66,12 +92,17 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
-      // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      const si = sinI[i];
+      const ci = cosI[i];
+
+      // ⚡ BOLT: Replace expensive per-particle sin/cos calls with arithmetic expansions
+      const sinPhase = sinT * ci + cosT * si;
+      const cosPhase = cosT * ci - sinT * si;
+      const sinPhase2 = sinT2 * ci + cosT2 * si;
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinPhase2 * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
