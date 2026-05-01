@@ -9,6 +9,16 @@ test('QuantumMirror deviceorientation logic', async (t) => {
   const listeners: Record<string, Function[]> = {};
 
   t.beforeEach(() => {
+    // Mock requestAnimationFrame and cancelAnimationFrame
+    global.requestAnimationFrame = (callback) => {
+      // Execute the callback synchronously to simplify testing.
+      // To ensure that assignment `rafRef.current = requestAnimationFrame()` finishes BEFORE
+      // the callback sets it to null, we schedule it as a microtask.
+      queueMicrotask(() => callback(0));
+      return 1;
+    };
+    global.cancelAnimationFrame = () => {};
+
     // Mock global window and its event listeners
     Object.defineProperty(global, 'window', {
       value: {
@@ -26,6 +36,10 @@ test('QuantumMirror deviceorientation logic', async (t) => {
   });
 
   t.afterEach(() => {
+    // Restore original requestAnimationFrame
+    delete (global as any).requestAnimationFrame;
+    delete (global as any).cancelAnimationFrame;
+
     // Restore original window
     Object.defineProperty(global, 'window', {
       value: originalWindow,
@@ -35,10 +49,10 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     for (const key in listeners) delete listeners[key];
   });
 
-  await t.test('initializes with default frequency and rotation', () => {
+  await t.test('initializes with default frequency and rotation', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
@@ -57,21 +71,22 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
-  await t.test('updates frequency and rotation when deviceorientation event is dispatched', () => {
+  await t.test('updates frequency and rotation when deviceorientation event is dispatched', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
     // Dispatch mock deviceorientation event
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
           listener({ alpha: 90, beta: 45, gamma: 180 });
         });
       }
+      await Promise.resolve(); // drain microtask queue
     });
 
     const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
@@ -91,20 +106,21 @@ test('QuantumMirror deviceorientation logic', async (t) => {
   });
 
 
-  await t.test('handles negative and zero beta values correctly', () => {
+  await t.test('handles negative and zero beta values correctly', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
           listener({ alpha: 10, beta: -45, gamma: -10 });
         });
       }
+      await Promise.resolve();
     });
 
     const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
@@ -119,13 +135,14 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(gammaDiv.children[0], '-10');
 
     // Dispatch another event with beta: 0
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
           listener({ alpha: 20, beta: 0, gamma: 20 });
         });
       }
+      await Promise.resolve();
     });
 
     // 432 + Math.round(0 / 10) = 432
@@ -139,21 +156,22 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
-  await t.test('handles missing event values gracefully', () => {
+  await t.test('handles missing event values gracefully', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
     // Dispatch mock deviceorientation event with null/undefined values
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
           listener({ alpha: null, beta: null, gamma: null });
         });
       }
+      await Promise.resolve();
     });
 
     const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
@@ -171,10 +189,10 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
-  await t.test('removes event listener on unmount', () => {
+  await t.test('removes event listener on unmount', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
