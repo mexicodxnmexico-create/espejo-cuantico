@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-02-07 - High-Frequency Event Throttling
+**Learning:** Found that `QuantumMirror` was updating React state synchronously inside a `deviceorientation` event listener. This event can fire extremely rapidly (60+ times per second), causing a massive flood of React state updates and re-renders, potentially blocking the main thread and causing UI jank.
+**Action:** Implemented `requestAnimationFrame` to throttle state updates to the display refresh rate (typically 60fps), discarding intermediate events and ensuring smooth rendering. Mocked `requestAnimationFrame` properly in tests using `queueMicrotask` to avoid test failures.
