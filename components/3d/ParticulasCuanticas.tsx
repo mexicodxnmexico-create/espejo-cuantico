@@ -23,15 +23,18 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  const [posiciones, colores, tamaños, trigLookup] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
     const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
+    // ⚡ BOLT: Pre-calculate sin(i) and cos(i) to use trig expansion in the frame loop
+    const trig = new Float32Array(cantidad * 2);
 
     const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
+      const i2 = i * 2;
 
       const radio = Math.random() * 5 + 3;
       const theta = Math.random() * Math.PI * 2;
@@ -46,9 +49,12 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
 
       tam[i] = Math.random() * 0.05 + 0.02;
+
+      trig[i2] = Math.sin(i);
+      trig[i2 + 1] = Math.cos(i);
     }
 
-    return [pos, col, tam];
+    return [pos, col, tam, trig];
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
@@ -56,22 +62,39 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
     tiempo.current += delta;
     const t = tiempo.current;
+    const tHalf = t * 0.5;
+
+    // ⚡ BOLT: Calculate trig values once per frame for expansion
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinTHalf = Math.sin(tHalf);
+    const cosTHalf = Math.cos(tHalf);
+
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
+      const i2 = i * 2;
 
       const x = posicionesArray[i3];
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
-      // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      const sinI = trigLookup[i2];
+      const cosI = trigLookup[i2 + 1];
+
+      // ⚡ BOLT: Apply trigonometric expansion identities:
+      // sin(t + i) = sin(t)cos(i) + cos(t)sin(i)
+      // cos(t + i) = cos(t)cos(i) - sin(t)sin(i)
+      // Reduces 3,000 Math.sin/cos calls to arithmetic + 4 calls per frame.
+      const sinPhase = sinT * cosI + cosT * sinI;
+      const cosPhase = cosT * cosI - sinT * sinI;
+      const sinPhaseHalf = sinTHalf * cosI + cosTHalf * sinI;
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinPhaseHalf * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
