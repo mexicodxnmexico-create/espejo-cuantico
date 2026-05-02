@@ -6,6 +6,8 @@ import { QuantumMirror } from '../src/components/QuantumMirror';
 
 test('QuantumMirror deviceorientation logic', async (t) => {
   const originalWindow = global.window;
+  const originalRequestAnimationFrame = global.requestAnimationFrame;
+  const originalCancelAnimationFrame = global.cancelAnimationFrame;
   const listeners: Record<string, Function[]> = {};
 
   t.beforeEach(() => {
@@ -23,6 +25,13 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       },
       configurable: true
     });
+
+    // Mock requestAnimationFrame for tests according to memory guidelines
+    global.requestAnimationFrame = (cb) => {
+      queueMicrotask(() => cb(0));
+      return 1;
+    };
+    global.cancelAnimationFrame = (id) => {};
   });
 
   t.afterEach(() => {
@@ -31,14 +40,16 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       value: originalWindow,
       configurable: true
     });
+    global.requestAnimationFrame = originalRequestAnimationFrame;
+    global.cancelAnimationFrame = originalCancelAnimationFrame;
     // Clear listeners
     for (const key in listeners) delete listeners[key];
   });
 
-  await t.test('initializes with default frequency and rotation', () => {
+  await t.test('initializes with default frequency and rotation', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
@@ -52,20 +63,20 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(betaDiv.children[0], '0');
     assert.strictEqual(gammaDiv.children[0], '0');
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root!.unmount();
     });
   });
 
-  await t.test('updates frequency and rotation when deviceorientation event is dispatched', () => {
+  await t.test('updates frequency and rotation when deviceorientation event is dispatched', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
     // Dispatch mock deviceorientation event
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
@@ -85,20 +96,20 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(betaDiv.children[0], '45');
     assert.strictEqual(gammaDiv.children[0], '180');
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root!.unmount();
     });
   });
 
 
-  await t.test('handles negative and zero beta values correctly', () => {
+  await t.test('handles negative and zero beta values correctly', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
@@ -119,7 +130,7 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(gammaDiv.children[0], '-10');
 
     // Dispatch another event with beta: 0
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
@@ -134,20 +145,20 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(betaDiv.children[0], '0');
     assert.strictEqual(gammaDiv.children[0], '20');
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root!.unmount();
     });
   });
 
-  await t.test('handles missing event values gracefully', () => {
+  await t.test('handles missing event values gracefully', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
     // Dispatch mock deviceorientation event with null/undefined values
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       const orientationListeners = listeners['deviceorientation'];
       if (orientationListeners) {
         orientationListeners.forEach(listener => {
@@ -166,21 +177,21 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     assert.strictEqual(betaDiv.children[0], '0');
     assert.strictEqual(gammaDiv.children[0], '0');
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root!.unmount();
     });
   });
 
-  await t.test('removes event listener on unmount', () => {
+  await t.test('removes event listener on unmount', async () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root = TestRenderer.create(<QuantumMirror />);
     });
 
     assert.strictEqual(listeners['deviceorientation'].length, 1);
 
-    TestRenderer.act(() => {
+    await TestRenderer.act(async () => {
       root!.unmount();
     });
 
