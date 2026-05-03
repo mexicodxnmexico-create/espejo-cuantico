@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2025-06-25 - Efficient Trigonometric Loop Operations
+**Learning:** Found that `ParticulasCuanticas.tsx` was performing redundant `Math.sin` and `Math.cos` calls per particle per frame (~3000 calls/frame) by computing phase shifts as `Math.sin(t + i)` inside the render loop.
+**Action:** Decouple static index-based trig values (`Math.sin(i)`, `Math.cos(i)`) into arrays during `useMemo`. Compute dynamic time-based trig values (`Math.sin(t)`, `Math.cos(t)`) once per frame outside the loop. Use angle sum identities (e.g. `sin(t+i) = sin(t)cos(i) + cos(t)sin(i)`) to replace all inside-loop trig calls with simple array lookups and arithmetic, dramatically reducing CPU overhead in the ThreeJS particle system loop.
