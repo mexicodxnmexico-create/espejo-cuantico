@@ -23,6 +23,7 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
+  // ⚡ BOLT: Decouple static attributes from dynamic ones to prevent unnecessary re-randomization
   const [posiciones, colores, tamaños] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
     const col = new Float32Array(cantidad * 3);
@@ -51,6 +52,17 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     return [pos, col, tam];
   }, [cantidad, frecuencia]);
 
+  // ⚡ BOLT: Pre-calculate trigonometric values to replace Math.sin/cos in the render loop with arithmetic
+  const trigLookup = useMemo(() => {
+    const sinI = new Float32Array(cantidad);
+    const cosI = new Float32Array(cantidad);
+    for (let i = 0; i < cantidad; i++) {
+      sinI[i] = Math.sin(i);
+      cosI[i] = Math.cos(i);
+    }
+    return { sinI, cosI };
+  }, [cantidad]);
+
   useFrame((_state, delta) => {
     if (!particulasRef.current || cantidad === 0) return;
 
@@ -59,19 +71,33 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
+    // ⚡ BOLT: Calculate frame-constant trigonometric values once
+    const st = Math.sin(t);
+    const ct = Math.cos(t);
+    const st2 = Math.sin(t * 0.5);
+    const ct2 = Math.cos(t * 0.5);
+    const { sinI, cosI } = trigLookup;
+
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
+
+      // ⚡ BOLT: Apply trigonometric expansion identities:
+      // sin(t + i) = sin(t)cos(i) + cos(t)sin(i)
+      // cos(t + i) = cos(t)cos(i) - sin(t)sin(i)
+      const s_i = sinI[i];
+      const c_i = cosI[i];
+
+      const sinPhase = st * c_i + ct * s_i;
+      const cosPhase = ct * c_i - st * s_i;
+      const sinPhase2 = st2 * c_i + ct2 * s_i;
 
       const x = posicionesArray[i3];
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
-      // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinPhase2 * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
