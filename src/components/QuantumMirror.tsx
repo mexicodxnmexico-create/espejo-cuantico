@@ -6,7 +6,13 @@ export const QuantumMirror: React.FC = () => {
 
   // 1. Lógica de Sensores y Frecuencia
   useEffect(() => {
-    const handleOrientation = (e: DeviceOrientationEvent) => {
+    let animationFrameId: number;
+    let latestEvent: DeviceOrientationEvent | null = null;
+
+    const processOrientation = () => {
+      if (!latestEvent) return;
+
+      const e = latestEvent;
       setRotation({
         alpha: e.alpha || 0,
         beta: e.beta || 0,
@@ -14,12 +20,27 @@ export const QuantumMirror: React.FC = () => {
       });
       // La frecuencia cambia sutilmente con la inclinación
       setFrequency(432 + (e.beta ? Math.round(e.beta / 10) : 0));
+
+      latestEvent = null;
+    };
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      latestEvent = e;
+      // ⚡ BOLT: Throttle high-frequency sensor updates using requestAnimationFrame
+      // to synchronize state changes with display refresh rate and reduce re-renders.
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      animationFrameId = requestAnimationFrame(processOrientation);
     };
 
     window.addEventListener('deviceorientation', handleOrientation);
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 
