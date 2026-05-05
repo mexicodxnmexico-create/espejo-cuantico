@@ -31,3 +31,6 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+## 2025-06-25 - Separation of Static and Dynamic Rendering State
+**Learning:** In highly dynamic components like `ParticulasCuanticas.tsx`, combining purely static calculations (e.g., base position arrays and pre-computed Math.sin/cos arrays) with dynamic properties (like changing colors on frequency updates) inside a single `useMemo` forces unnecessary, expensive re-evaluations and visually jarring 'resets' of the system.
+**Action:** Always decouple properties that depend strictly on static initialization variables (like `cantidad`) from those that depend on runtime variables (like `frecuencia`) into separate `useMemo` hooks to minimize recalculation overhead and maintain state continuity.
