@@ -23,12 +23,13 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  // ⚡ BOLT: Decouple static properties from frequency to avoid layout trashing
+  // Pre-calculate trigonometric lookups for massive per-frame CPU savings
+  const [posiciones, tamaños, sinI, cosI] = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
-    const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
-
-    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+    const sinArr = new Float32Array(cantidad);
+    const cosArr = new Float32Array(cantidad);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -41,14 +42,28 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       pos[i3 + 1] = radio * Math.sin(phi) * Math.sin(theta);
       pos[i3 + 2] = radio * Math.cos(phi);
 
+      tam[i] = Math.random() * 0.05 + 0.02;
+
+      sinArr[i] = Math.sin(i);
+      cosArr[i] = Math.cos(i);
+    }
+
+    return [pos, tam, sinArr, cosArr];
+  }, [cantidad]);
+
+  // ⚡ BOLT: Only recalculate colors when frequency changes
+  const colores = useMemo(() => {
+    const col = new Float32Array(cantidad * 3);
+    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+
+    for (let i = 0; i < cantidad; i++) {
+      const i3 = i * 3;
       col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
       col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
       col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
-
-      tam[i] = Math.random() * 0.05 + 0.02;
     }
 
-    return [pos, col, tam];
+    return col;
   }, [cantidad, frecuencia]);
 
   useFrame((_state, delta) => {
@@ -59,6 +74,13 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
 
+    // ⚡ BOLT: Calculate time-based trig once per frame
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const tHalf = t * 0.5;
+    const sinTHalf = Math.sin(tHalf);
+    const cosTHalf = Math.cos(tHalf);
+
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
 
@@ -68,10 +90,18 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
 
       // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
       // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      // ⚡ BOLT: Apply trigonometric expansion: sin(a+b) = sin(a)cos(b) + cos(a)sin(b)
+      // cos(a+b) = cos(a)cos(b) - sin(a)sin(b)
+      const sI = sinI[i];
+      const cI = cosI[i];
+
+      const sinPhase = sinT * cI + cosT * sI;
+      const cosPhase = cosT * cI - sinT * sI;
+      const sinHalfPhase = sinTHalf * cI + cosTHalf * sI;
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinHalfPhase * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
