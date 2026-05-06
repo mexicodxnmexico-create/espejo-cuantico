@@ -171,6 +171,47 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('handles fractional beta values and rounds correctly', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Test rounding down: 44 / 10 = 4.4 -> 4
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 44, gamma: 0 });
+        });
+      }
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
+
+    assert.strictEqual(freqDiv.children[0], '436'); // 432 + 4
+    assert.strictEqual(betaDiv.children[0], '44');
+
+    // Test rounding up: 45 / 10 = 4.5 -> 5
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 0, beta: 45, gamma: 0 });
+        });
+      }
+    });
+
+    assert.strictEqual(freqDiv.children[0], '437'); // 432 + 5
+    assert.strictEqual(betaDiv.children[0], '45');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('removes event listener on unmount', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
