@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-07-10 - Trigonometric Expansion and Attribute Decoupling
+**Learning:** In Three.js particle systems, decoupling static attributes (positions, sizes) from props like frequency prevents visual jarring and redundant O(n) re-calculations. Furthermore, applying trigonometric expansion identities ($\sin(A+B) = \sin A \cos B + \cos A \sin B$) allows moving expensive transcendental function calls outside the animation loop, reducing per-frame cost from $O(3N)$ to $O(1)$ for those functions.
+**Action:** Use `useMemo` to pre-calculate `sin(i)` and `cos(i)` lookup tables for indices. Implement expansion identities in `useFrame` to replace per-particle `Math.sin/cos` calls with arithmetic.
