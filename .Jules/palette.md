@@ -1,0 +1,3 @@
+## 2025-02-27 - Form Accessibility: Replacing Visual Titles with Semantic Labels
+**Learning:** In this app's components, `<h3>` tags were mistakenly used instead of `<label>` tags to serve as visual titles for form controls (`<select>` and `<input>`), causing screen readers to misinterpret the structure and miss the association between the label and input.
+**Action:** Always use semantic `<label>` elements with the `htmlFor` attribute mapping exactly to the form control's `id` instead of heading tags for visual titles. Use CSS (`display: block`, `fontWeight: bold`) on labels to maintain the visual hierarchy without sacrificing accessibility.
