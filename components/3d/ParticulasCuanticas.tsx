@@ -23,12 +23,14 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
   const particulasRef = useRef<THREE.Points>(null);
   const tiempo = useRef(0);
 
-  const [posiciones, colores, tamaños] = useMemo(() => {
+  // ⚡ BOLT: Decouple static attributes from dynamic frequency-based updates.
+  // This avoids re-randomizing the particle field when frequency changes.
+  const { staticPositions, tamaños, sinI, cosI, colorOffsets } = useMemo(() => {
     const pos = new Float32Array(cantidad * 3);
-    const col = new Float32Array(cantidad * 3);
     const tam = new Float32Array(cantidad);
-
-    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+    const sI = new Float32Array(cantidad);
+    const cI = new Float32Array(cantidad);
+    const cOff = new Float32Array(cantidad * 3);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -41,23 +43,49 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       pos[i3 + 1] = radio * Math.sin(phi) * Math.sin(theta);
       pos[i3 + 2] = radio * Math.cos(phi);
 
-      col[i3] = colorBase.r + (Math.random() - 0.5) * 0.2;
-      col[i3 + 1] = colorBase.g + (Math.random() - 0.5) * 0.2;
-      col[i3 + 2] = colorBase.b + (Math.random() - 0.5) * 0.2;
-
       tam[i] = Math.random() * 0.05 + 0.02;
+
+      // ⚡ BOLT: Pre-compute trig lookup tables for trigonometric expansion in useFrame
+      sI[i] = Math.sin(i);
+      cI[i] = Math.cos(i);
+
+      // ⚡ BOLT: Pre-compute random color offsets
+      cOff[i3] = (Math.random() - 0.5) * 0.2;
+      cOff[i3 + 1] = (Math.random() - 0.5) * 0.2;
+      cOff[i3 + 2] = (Math.random() - 0.5) * 0.2;
     }
 
-    return [pos, col, tam];
-  }, [cantidad, frecuencia]);
+    return { staticPositions: pos, tamaños: tam, sinI: sI, cosI: cI, colorOffsets: cOff };
+  }, [cantidad]);
+
+  // ⚡ BOLT: Dynamic colors update independently of particle positions
+  const colores = useMemo(() => {
+    const col = new Float32Array(cantidad * 3);
+    const colorBase = COLORES_SOLFEGGIO[frecuencia] || { r: 0.02, g: 0.84, b: 0.63 };
+
+    for (let i = 0; i < cantidad * 3; i += 3) {
+      col[i] = colorBase.r + colorOffsets[i];
+      col[i + 1] = colorBase.g + colorOffsets[i + 1];
+      col[i + 2] = colorBase.b + colorOffsets[i + 2];
+    }
+
+    return col;
+  }, [cantidad, frecuencia, colorOffsets]);
 
   useFrame((_state, delta) => {
     if (!particulasRef.current || cantidad === 0) return;
 
     tiempo.current += delta;
     const t = tiempo.current;
+    const tHalf = t * 0.5;
     const velocidad = (frecuencia / 500) * delta;
     const posicionesArray = particulasRef.current.geometry.attributes.position.array as Float32Array;
+
+    // ⚡ BOLT: Pre-calculate trig functions for the frame once
+    const sinT = Math.sin(t);
+    const cosT = Math.cos(t);
+    const sinTHalf = Math.sin(tHalf);
+    const cosTHalf = Math.cos(tHalf);
 
     for (let i = 0; i < cantidad; i++) {
       const i3 = i * 3;
@@ -66,12 +94,19 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
       const y = posicionesArray[i3 + 1];
       const z = posicionesArray[i3 + 2];
 
-      // ⚡ BOLT: Use local variables to avoid repeated TypedArray reads/writes
-      // and squared distance to avoid Math.sqrt in the common case.
-      const phase = t + i;
-      const nextX = x + Math.sin(phase) * velocidad;
-      const nextY = y + Math.cos(phase) * velocidad;
-      const nextZ = z + Math.sin(t * 0.5 + i) * velocidad;
+      const sI = sinI[i];
+      const cI = cosI[i];
+
+      // ⚡ BOLT: Replace per-particle Math.sin/cos with trig expansion identities
+      // sin(t+i) = sin(t)cos(i) + cos(t)sin(i)
+      // cos(t+i) = cos(t)cos(i) - sin(t)sin(i)
+      const sinPhase = sinT * cI + cosT * sI;
+      const cosPhase = cosT * cI - sinT * sI;
+      const sinZPhase = sinTHalf * cI + cosTHalf * sI;
+
+      const nextX = x + sinPhase * velocidad;
+      const nextY = y + cosPhase * velocidad;
+      const nextZ = z + sinZPhase * velocidad;
 
       const nextDistSq = nextX * nextX + nextY * nextY + nextZ * nextZ;
 
@@ -101,7 +136,7 @@ export function ParticulasCuanticas({ frecuencia, cantidad }: ParticulasCuantica
         <bufferAttribute
           attach="attributes-position"
           count={cantidad}
-          array={posiciones}
+          array={staticPositions}
           itemSize={3}
         />
         <bufferAttribute
