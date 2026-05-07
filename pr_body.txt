@@ -1,10 +1,11 @@
-🎯 **What:** The `MeditationEngine` logic in `lib/meditation-engine.ts` lacked a test suite. A divide-by-zero vulnerability existed in `calculateProgress` when `totalDuration` was 0.
+💡 **What:**
+Optimized `ParticulasCuanticas.tsx` by separating static and dynamic attribute calculations and replacing per-particle `Math.sin` and `Math.cos` calls inside the high-frequency render loop (`useFrame`) with trigonometric expansions and lookup tables.
 
-📊 **Coverage:** A new suite of tests was written in `tests/meditation-engine.test.ts` to assert logic on:
-- Object initialization
-- `startSession` behavior
-- `endSession` behavior and side effects
-- `calculateProgress` success flow and intermediate duration testing
-- 0-duration edge cases preventing `NaN` error assignments
+🎯 **Why:**
+The component was calling `Math.sin` and `Math.cos` natively for every single particle on every single frame, causing significant CPU overhead and dropping the framerate. Additionally, the previous `useMemo` setup recreated all positions and sizes whenever the frequency changed, leading to unnecessary allocations and a visual stutter.
 
-✨ **Result:** Test coverage improved across the application logic. Now edge-case scenarios return `0` instead of `NaN` for meditation progress preventing upstream UI failures.
+📊 **Impact:**
+Substantially reduces CPU time spent per frame by eliminating native trigonometric function calls in the hot loop, shifting them to fast array lookups and arithmetic operations. The visual transition when changing frequencies is also smoother since random positions aren't recalculated.
+
+🔬 **Measurement:**
+Run `pnpm build` and verify successful types compilation. Run `npx tsx --test` to ensure no functionality is broken. Use the `Next.js` profiler to observe reduced frame rendering time when viewing the 3D particles.
