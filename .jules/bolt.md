@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Trigonometric Loop Optimization
+**Learning:** Found that `ParticulasCuanticas.tsx` was performing thousands of per-particle `Math.sin(phase)` and `Math.cos(phase)` calls within a 1000-iteration `useFrame` render loop. Because `phase` was derived dynamically (`t + i`), `Math.sin/cos` could not be pre-calculated outside the loop directly.
+**Action:** Used the trigonometric addition formulas (`sin(t+i) = sin(t)cos(i) + cos(t)sin(i)`) to separate the dynamic time `t` from the static particle index `i`. Pre-calculate `sin(t)` and `cos(t)` exactly once per frame, and lookup pre-calculated `sin(i)` and `cos(i)` from static Float32Arrays. This reduces math function calls from ~3000 to just 4 per frame, dramatically improving framerate. Additionally, decoupling `posiciones` and `colores` in `useMemo` avoids particle position resets when only frequency changes.
