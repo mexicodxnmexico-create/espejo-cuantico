@@ -10,22 +10,21 @@ interface GeometriaSagrada3DProps {
   tipo: "flor-vida" | "merkaba" | "metatron" | "torus";
 }
 
+// ⚡ BOLT: Move static frequency-to-color mapping outside the component to avoid hook overhead.
+const COLORES_FRECUENCIA: Record<number, string> = {
+  396: "#e63946",
+  417: "#f77f00",
+  528: "#06d6a0",
+  639: "#118ab2",
+  741: "#073b4c",
+  852: "#8338ec"
+};
+
 export function GeometriaSagrada3D({ frecuencia, intensidad, tipo }: GeometriaSagrada3DProps) {
   const grupoRef = useRef<THREE.Group>(null);
   const tiempo = useRef(0);
 
-  // ⚡ OPTIMIZACIÓN: Calcular color basado en frecuencia solo cuando cambia
-  const colorFrecuencia = useMemo(() => {
-    const colores = {
-      396: "#e63946",
-      417: "#f77f00",
-      528: "#06d6a0",
-      639: "#118ab2",
-      741: "#073b4c",
-      852: "#8338ec"
-    };
-    return colores[frecuencia as keyof typeof colores] || "#06d6a0";
-  }, [frecuencia]);
+  const colorFrecuencia = COLORES_FRECUENCIA[frecuencia] || "#06d6a0";
 
   // ⚡ OPTIMIZACIÓN: Crear geometrías complejas solo una vez
   const geometrias = useMemo(() => {
