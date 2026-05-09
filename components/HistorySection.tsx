@@ -1,4 +1,4 @@
-import { CSSProperties, memo, useMemo } from "react";
+import { CSSProperties, memo } from "react";
 
 const HISTORY_SECTION_STYLE: CSSProperties = { marginBottom: "1.5rem" };
 const LOG_CONTAINER_STYLE: CSSProperties = {
