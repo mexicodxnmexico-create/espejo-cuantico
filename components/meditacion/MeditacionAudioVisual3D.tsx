@@ -23,6 +23,9 @@ const GEOMETRIAS = [
   { id: "torus" as const, nombre: "Torus Energético" }
 ];
 
+// ⚡ BOLT: Pre-calculate O(1) lookup maps to avoid O(n) find() calls in render
+const GEOMETRIA_NOMBRES = Object.fromEntries(GEOMETRIAS.map(g => [g.id, g.nombre]));
+
 export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ onCompletarMeditacion }: Props) {
   const [activo, setActivo] = useState(false);
   const [frecuenciaSeleccionada, setFrecuenciaSeleccionada] = useState(528);
@@ -259,7 +262,7 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           💡 Acerca de esta experiencia
         </h3>
         <p style={{ margin: 0, color: "#0466c8", lineHeight: "1.6" }}>
-          La frecuencia de {frecuenciaSeleccionada} Hz combinada con la geometría sagrada {GEOMETRIAS.find(g => g.id === geometriaSeleccionada)?.nombre} crea un campo de resonancia cuántica que facilita estados profundos de meditación. Las visualizaciones tridimensionales interactivas sincronizan con las frecuencias sonoras para optimizar la coherencia cerebral y la armonización energética.
+          La frecuencia de {frecuenciaSeleccionada} Hz combinada con la geometría sagrada {GEOMETRIA_NOMBRES[geometriaSeleccionada]} crea un campo de resonancia cuántica que facilita estados profundos de meditación. Las visualizaciones tridimensionales interactivas sincronizan con las frecuencias sonoras para optimizar la coherencia cerebral y la armonización energética.
         </p>
       </div>
     </div>
