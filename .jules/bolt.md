@@ -31,3 +31,7 @@
 ## 2025-06-24 - Efficient Fixed-Size Array Updates
 **Learning:** Using `[...arr, item].slice(-N)` for maintaining a fixed-size buffer causes two array allocations (one for the spread and one for the final slice). While `shift()` is O(n), using `slice()` followed by `push()` and `shift()` is significantly faster because it minimizes heap pressure by avoiding the intermediate array allocation.
 **Action:** Prefer `slice()` + `push()` + `shift()` for more efficient memory management in state transitions.
+
+## 2025-06-25 - Throttling High-Frequency Sensor Events
+**Learning:** High-frequency events like `deviceorientation` can fire much faster than the display refresh rate (up to 100Hz+ on some devices). Synchronous state updates on every event cause massive React re-render overhead and block the main thread.
+**Action:** Use `requestAnimationFrame` to throttle state updates to the display's refresh rate (~60fps). Store the latest event data in a `useRef` to ensure only the most recent state is applied during the next frame.
