@@ -7,6 +7,7 @@ import { QuantumMirror } from '../src/components/QuantumMirror';
 test('QuantumMirror deviceorientation logic', async (t) => {
   const originalWindow = global.window;
   const listeners: Record<string, Function[]> = {};
+  const rafCallbacks: Function[] = [];
 
   t.beforeEach(() => {
     // Mock global window and its event listeners
@@ -19,10 +20,21 @@ test('QuantumMirror deviceorientation logic', async (t) => {
         removeEventListener: (event: string, callback: Function) => {
           if (!listeners[event]) return;
           listeners[event] = listeners[event].filter(cb => cb !== callback);
+        },
+        requestAnimationFrame: (cb: Function) => {
+          rafCallbacks.push(cb);
+          return rafCallbacks.length;
+        },
+        cancelAnimationFrame: (id: number) => {
+          rafCallbacks.splice(id - 1, 1);
         }
       },
       configurable: true
     });
+
+    // ⚡ BOLT: Ensure requestAnimationFrame is globally available for the component
+    (global as any).requestAnimationFrame = (global.window as any).requestAnimationFrame;
+    (global as any).cancelAnimationFrame = (global.window as any).cancelAnimationFrame;
   });
 
   t.afterEach(() => {
@@ -31,8 +43,12 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       value: originalWindow,
       configurable: true
     });
-    // Clear listeners
+    delete (global as any).requestAnimationFrame;
+    delete (global as any).cancelAnimationFrame;
+
+    // Clear listeners and callbacks
     for (const key in listeners) delete listeners[key];
+    rafCallbacks.length = 0;
   });
 
   await t.test('initializes with default frequency and rotation', () => {
@@ -57,6 +73,43 @@ test('QuantumMirror deviceorientation logic', async (t) => {
     });
   });
 
+  await t.test('throttles multiple events within a single frame', () => {
+    let root: TestRenderer.ReactTestRenderer | undefined;
+
+    TestRenderer.act(() => {
+      root = TestRenderer.create(<QuantumMirror />);
+    });
+
+    // Dispatch multiple events
+    TestRenderer.act(() => {
+      const orientationListeners = listeners['deviceorientation'];
+      if (orientationListeners) {
+        orientationListeners.forEach(listener => {
+          listener({ alpha: 10, beta: 10, gamma: 10 });
+          listener({ alpha: 20, beta: 20, gamma: 20 });
+          listener({ alpha: 30, beta: 30, gamma: 30 });
+        });
+      }
+    });
+
+    // Verify only one RAF is scheduled
+    assert.strictEqual(rafCallbacks.length, 1);
+
+    // Trigger RAF
+    TestRenderer.act(() => {
+      rafCallbacks.forEach(cb => cb());
+      rafCallbacks.length = 0;
+    });
+
+    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    // Should be based on the LAST event: 432 + Math.round(30/10) = 435
+    assert.strictEqual(freqDiv.children[0], '435');
+
+    TestRenderer.act(() => {
+      root!.unmount();
+    });
+  });
+
   await t.test('updates frequency and rotation when deviceorientation event is dispatched', () => {
     let root: TestRenderer.ReactTestRenderer | undefined;
 
@@ -74,7 +127,17 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       }
     });
 
-    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    // ⚡ BOLT: Verify state HAS NOT updated yet because of throttling
+    let freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    assert.strictEqual(freqDiv.children[0], '432');
+
+    // ⚡ BOLT: Trigger RAF callback to apply the update
+    TestRenderer.act(() => {
+      rafCallbacks.forEach(cb => cb());
+      rafCallbacks.length = 0;
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
     const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
     const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
     const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
@@ -107,7 +170,13 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       }
     });
 
-    const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
+    // Trigger RAF
+    TestRenderer.act(() => {
+      rafCallbacks.forEach(cb => cb());
+      rafCallbacks.length = 0;
+    });
+
+    let freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
     const alphaDiv = root!.root.findByProps({ 'data-testid': 'rotation-alpha' });
     const betaDiv = root!.root.findByProps({ 'data-testid': 'rotation-beta' });
     const gammaDiv = root!.root.findByProps({ 'data-testid': 'rotation-gamma' });
@@ -128,6 +197,13 @@ test('QuantumMirror deviceorientation logic', async (t) => {
       }
     });
 
+    // Trigger RAF
+    TestRenderer.act(() => {
+      rafCallbacks.forEach(cb => cb());
+      rafCallbacks.length = 0;
+    });
+
+    freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
     // 432 + Math.round(0 / 10) = 432
     assert.strictEqual(freqDiv.children[0], '432');
     assert.strictEqual(alphaDiv.children[0], '20');
@@ -154,6 +230,12 @@ test('QuantumMirror deviceorientation logic', async (t) => {
           listener({ alpha: null, beta: null, gamma: null });
         });
       }
+    });
+
+    // Trigger RAF
+    TestRenderer.act(() => {
+      rafCallbacks.forEach(cb => cb());
+      rafCallbacks.length = 0;
     });
 
     const freqDiv = root!.root.findByProps({ 'data-testid': 'frequency' });
