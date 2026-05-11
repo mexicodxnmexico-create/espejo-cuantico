@@ -144,12 +144,15 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           padding: "1.5rem",
           background: "#fff",
           borderRadius: "12px",
-          border: "1px solid #eaeaea"
+          border: "1px solid #eaeaea",
+          display: "flex",
+          flexDirection: "column"
         }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+          <label htmlFor="frecuencia" style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333", fontWeight: "bold", display: "block" }}>
             Frecuencia Solfeggio
-          </h3>
+          </label>
           <select
+            id="frecuencia"
             value={frecuenciaSeleccionada}
             onChange={(e) => setFrecuenciaSeleccionada(Number(e.target.value))}
             disabled={activo}
@@ -174,12 +177,15 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           padding: "1.5rem",
           background: "#fff",
           borderRadius: "12px",
-          border: "1px solid #eaeaea"
+          border: "1px solid #eaeaea",
+          display: "flex",
+          flexDirection: "column"
         }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+          <label htmlFor="geometria" style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333", fontWeight: "bold", display: "block" }}>
             Geometría Sagrada
-          </h3>
+          </label>
           <select
+            id="geometria"
             value={geometriaSeleccionada}
             onChange={(e) => setGeometriaSeleccionada(e.target.value as any)}
             disabled={activo}
@@ -204,12 +210,15 @@ export const MeditacionAudioVisual3D = memo(function MeditacionAudioVisual3D({ o
           padding: "1.5rem",
           background: "#fff",
           borderRadius: "12px",
-          border: "1px solid #eaeaea"
+          border: "1px solid #eaeaea",
+          display: "flex",
+          flexDirection: "column"
         }}>
-          <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333" }}>
+          <label htmlFor="duracion" style={{ fontSize: "1rem", marginBottom: "1rem", color: "#333", fontWeight: "bold", display: "block" }}>
             Duración (minutos)
-          </h3>
+          </label>
           <input
+            id="duracion"
             type="number"
             min="1"
             max="60"
